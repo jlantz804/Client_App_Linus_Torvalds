@@ -7,8 +7,8 @@
     Title="Client_App">
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Title="Lesson Plans"
+        ContentTemplate="{DataTemplate local:LessonPlans}"
+        Route="LessonPlans" />
 
 </Shell>

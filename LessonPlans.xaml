@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Client_App.LessonPlans"
+             Title="Lesson Plans"
+             BackgroundColor="#F4F7F5">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="22,18" RowSpacing="18">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+            <VerticalStackLayout Spacing="4" VerticalOptions="Center">
+                <Label Text="TEACHER WORKSPACE"
+                       FontSize="11"
+                       FontAttributes="Bold"
+                       CharacterSpacing="1.5"
+                       TextColor="#55766A" />
+                <Label Text="Lesson plans"
+                       FontSize="30"
+                       FontAttributes="Bold"
+                       TextColor="#18352B" />
+                <Label x:Name="PlanCountLabel"
+                       Text="Your plans"
+                       FontSize="14"
+                       TextColor="#718078" />
+            </VerticalStackLayout>
+            <Button Grid.Column="1"
+                    Text="＋  New plan"
+                    Clicked="OnAddClicked"
+                    BackgroundColor="#216A50"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    CornerRadius="14"
+                    Padding="16,12"
+                    VerticalOptions="Center" />
+        </Grid>
+
+        <Border Grid.Row="1"
+                BackgroundColor="White"
+                Stroke="#E1E9E4"
+                StrokeThickness="1"
+                Padding="14,2"
+                StrokeShape="RoundRectangle 14">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                <Label Text="⌕" FontSize="24" TextColor="#718078" VerticalOptions="Center" />
+                <Entry x:Name="SearchEntry"
+                       Grid.Column="1"
+                       Placeholder="Search plans, subjects, or grades"
+                       PlaceholderColor="#9AA7A0"
+                       TextColor="#18352B"
+                       BackgroundColor="Transparent"
+                       ClearButtonVisibility="WhileEditing"
+                       TextChanged="OnSearchTextChanged" />
+            </Grid>
+        </Border>
+
+        <CollectionView x:Name="PlansCollection"
+                        Grid.Row="2"
+                        ItemsSource="{Binding VisiblePlans}"
+                        SelectionMode="None">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="24,48" Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="No lesson plans found"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="#18352B"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="Create a plan or try another search."
+                           FontSize="14"
+                           TextColor="#718078"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="12" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border BackgroundColor="White"
+                            Stroke="#E1E9E4"
+                            StrokeThickness="1"
+                            Padding="18"
+                            StrokeShape="RoundRectangle 18">
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="12">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <VerticalStackLayout Spacing="5">
+                                    <Label Text="{Binding Title}"
+                                           FontSize="19"
+                                           FontAttributes="Bold"
+                                           TextColor="#18352B" />
+                                    <Label Text="{Binding Subject}"
+                                           FontSize="13"
+                                           FontAttributes="Bold"
+                                           TextColor="#216A50" />
+                                </VerticalStackLayout>
+                                <Border Grid.Column="1"
+                                        BackgroundColor="#EAF3ED"
+                                        StrokeThickness="0"
+                                        Padding="10,6"
+                                        VerticalOptions="Start"
+                                        StrokeShape="RoundRectangle 10">
+                                    <Label Text="{Binding GradeLevel}"
+                                           FontSize="12"
+                                           FontAttributes="Bold"
+                                           TextColor="#216A50" />
+                                </Border>
+                            </Grid>
+                            <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <Label Text="{Binding ScheduledDate, StringFormat='Date  ·  {0:MMM d, yyyy}'}"
+                                       FontSize="13"
+                                       TextColor="#718078" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding DurationMinutes, StringFormat='{0} min'}"
+                                       FontSize="13"
+                                       TextColor="#718078"
+                                       HorizontalTextAlignment="End" />
+                            </Grid>
+                            <Label Grid.Row="2"
+                                   Text="LESSON OBJECTIVES"
+                                   FontSize="10"
+                                   FontAttributes="Bold"
+                                   CharacterSpacing="1"
+                                   TextColor="#9AA7A0" />
+                            <Label Grid.Row="3"
+                                   Text="{Binding Objectives}"
+                                   FontSize="14"
+                                   TextColor="#46574E"
+                                   LineBreakMode="WordWrap"
+                                   MaxLines="3" />
+                            <Grid Grid.Row="4" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                <Button Grid.Column="1"
+                                        Text="Edit"
+                                        Clicked="OnEditClicked"
+                                        CommandParameter="{Binding .}"
+                                        BackgroundColor="#F1F5F2"
+                                        TextColor="#216A50"
+                                        FontAttributes="Bold"
+                                        CornerRadius="10"
+                                        Padding="14,8" />
+                                <Button Grid.Column="2"
+                                        Text="Delete"
+                                        Clicked="OnDeleteClicked"
+                                        CommandParameter="{Binding .}"
+                                        BackgroundColor="#FFF0ED"
+                                        TextColor="#A64232"
+                                        FontAttributes="Bold"
+                                        CornerRadius="10"
+                                        Padding="14,8" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Grid x:Name="EditorOverlay"
+              Grid.RowSpan="3"
+              IsVisible="False"
+              ZIndex="10"
+              BackgroundColor="#660F2118"
+              Padding="20">
+            <ScrollView VerticalOptions="Center">
+                <Border BackgroundColor="White"
+                        Stroke="#E1E9E4"
+                        StrokeThickness="1"
+                        Padding="22"
+                        MaximumWidthRequest="520"
+                        HorizontalOptions="Center"
+                        StrokeShape="RoundRectangle 22">
+                    <VerticalStackLayout Spacing="13">
+                        <Label x:Name="EditorHeading"
+                               Text="New lesson plan"
+                               FontSize="24"
+                               FontAttributes="Bold"
+                               TextColor="#18352B" />
+                        <Label Text="Add the details for this lesson."
+                               FontSize="14"
+                               TextColor="#718078" />
+
+                        <Label Text="Lesson title" FontSize="12" FontAttributes="Bold" TextColor="#46574E" />
+                        <Entry x:Name="TitleEntry" Placeholder="e.g. Intro to teamwork" />
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="Subject" FontSize="12" FontAttributes="Bold" TextColor="#46574E" />
+                                <Entry x:Name="SubjectEntry" Placeholder="e.g. Physical education" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" Spacing="5">
+                                <Label Text="Grade" FontSize="12" FontAttributes="Bold" TextColor="#46574E" />
+                                <Entry x:Name="GradeEntry" Placeholder="e.g. Grade 5" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="Date" FontSize="12" FontAttributes="Bold" TextColor="#46574E" />
+                                <DatePicker x:Name="ScheduledDatePicker" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" Spacing="5">
+                                <Label Text="Duration (minutes)" FontSize="12" FontAttributes="Bold" TextColor="#46574E" />
+                                <Entry x:Name="DurationEntry" Placeholder="45" Keyboard="Numeric" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Label Text="Lesson objectives" FontSize="12" FontAttributes="Bold" TextColor="#46574E" />
+                        <Editor x:Name="ObjectivesEditor"
+                                Placeholder="What will students learn or practice?"
+                                AutoSize="TextChanges"
+                                MinimumHeightRequest="90" />
+                        <Label x:Name="ValidationLabel"
+                               IsVisible="False"
+                               FontSize="12"
+                               TextColor="#A64232" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,4,0,0">
+                            <Button Text="Cancel"
+                                    Clicked="OnCancelEditorClicked"
+                                    BackgroundColor="#F1F5F2"
+                                    TextColor="#46574E"
+                                    CornerRadius="12" />
+                            <Button Grid.Column="1"
+                                    Text="Save plan"
+                                    Clicked="OnSaveClicked"
+                                    BackgroundColor="#216A50"
+                                    TextColor="White"
+                                    FontAttributes="Bold"
+                                    CornerRadius="12" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+            </ScrollView>
+        </Grid>
+    </Grid>
+</ContentPage>
