@@ -17,19 +17,28 @@
                        FontAttributes="Bold"
                        TextColor="#18352B" />
                 <Label x:Name="PlanCountLabel"
-                       Text="Your plans"
+                       Text="Connecting to Supabase…"
                        FontSize="14"
                        TextColor="#718078" />
             </VerticalStackLayout>
-            <Button Grid.Column="1"
-                    Text="＋  New plan"
-                    Clicked="OnAddClicked"
-                    BackgroundColor="#216A50"
-                    TextColor="White"
-                    FontAttributes="Bold"
-                    CornerRadius="14"
-                    Padding="16,12"
-                    VerticalOptions="Center" />
+            <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                <Button x:Name="AddPlanButton"
+                        Text="＋  New plan"
+                        Clicked="OnAddClicked"
+                        BackgroundColor="#216A50"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        CornerRadius="14"
+                        Padding="16,12" />
+                <Button x:Name="AccountButton"
+                        Text="Sign in"
+                        Clicked="OnAccountClicked"
+                        BackgroundColor="#EAF3ED"
+                        TextColor="#216A50"
+                        FontAttributes="Bold"
+                        CornerRadius="14"
+                        Padding="16,10" />
+            </VerticalStackLayout>
         </Grid>
 
         <Border Grid.Row="1"
@@ -85,10 +94,16 @@
                                            FontSize="19"
                                            FontAttributes="Bold"
                                            TextColor="#18352B" />
-                                    <Label Text="{Binding Subject}"
+                                    <Label Text="{Binding Activity}"
                                            FontSize="13"
                                            FontAttributes="Bold"
                                            TextColor="#216A50" />
+                                    <Label Text="{Binding SchoolLevel}"
+                                           FontSize="12"
+                                           TextColor="#718078" />
+                                    <Label Text="{Binding Category}"
+                                           FontSize="12"
+                                           TextColor="#718078" />
                                 </VerticalStackLayout>
                                 <Border Grid.Column="1"
                                         BackgroundColor="#EAF3ED"
@@ -177,16 +192,26 @@
                         <Label Text="Lesson title" FontSize="12" FontAttributes="Bold" TextColor="#46574E" />
                         <Entry x:Name="TitleEntry" Placeholder="e.g. Intro to teamwork" />
 
+                        <Label Text="School level" FontSize="12" FontAttributes="Bold" TextColor="#46574E" />
+                        <Picker x:Name="SchoolLevelPicker"
+                                Title="Choose a school level"
+                                SelectedIndexChanged="OnSchoolLevelChanged" />
+
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                             <VerticalStackLayout Spacing="5">
-                                <Label Text="Subject" FontSize="12" FontAttributes="Bold" TextColor="#46574E" />
-                                <Entry x:Name="SubjectEntry" Placeholder="e.g. Physical education" />
+                                <Label Text="Category" FontSize="12" FontAttributes="Bold" TextColor="#46574E" />
+                                <Entry x:Name="CategoryEntry" Placeholder="e.g. Object control skills" />
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Column="1" Spacing="5">
                                 <Label Text="Grade" FontSize="12" FontAttributes="Bold" TextColor="#46574E" />
                                 <Entry x:Name="GradeEntry" Placeholder="e.g. Grade 5" />
                             </VerticalStackLayout>
                         </Grid>
+
+                        <Label Text="Activity or skill" FontSize="12" FontAttributes="Bold" TextColor="#46574E" />
+                        <Picker x:Name="ActivityPicker"
+                                Title="Choose an activity or skill"
+                                SelectedIndexChanged="OnActivityChanged" />
 
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                             <VerticalStackLayout Spacing="5">

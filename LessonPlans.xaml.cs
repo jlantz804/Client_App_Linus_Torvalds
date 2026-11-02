@@ -1,38 +1,107 @@
 using System.Collections.ObjectModel;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Client_App;
 
 public partial class LessonPlans : ContentPage
 {
-    private readonly List<LessonPlan> _allPlans =
+    private static readonly string[] SchoolLevels = ["Elementary", "Middle School", "High School"];
+
+    private static readonly Dictionary<string, string> ElementaryCategories = new(StringComparer.Ordinal)
+    {
+        ["Overhand throwing"] = "Object control skills",
+        ["Underhand tossing"] = "Object control skills",
+        ["Kicking"] = "Object control skills",
+        ["Striking"] = "Object control skills",
+        ["Catching"] = "Object control skills",
+        ["Run"] = "Locomotor movements",
+        ["Walk"] = "Locomotor movements",
+        ["Gallop"] = "Locomotor movements",
+        ["Hop"] = "Locomotor movements",
+        ["Leap"] = "Locomotor movements",
+        ["Side side"] = "Locomotor movements",
+        ["Skip"] = "Locomotor movements",
+        ["Jump"] = "Locomotor movements"
+    };
+
+    private static readonly string[] MiddleHighActivities =
     [
-        new("Teamwork Through Movement", "Physical Education", "Grade 4", DateTime.Today.AddDays(1), 45,
-            "Practice communication and cooperation through small-group movement challenges."),
-        new("Building a Balanced Plate", "Health", "Grade 5", DateTime.Today.AddDays(2), 35,
-            "Identify major food groups and create a balanced meal using familiar foods."),
-        new("Locomotor Skills Circuit", "Physical Education", "Grade 2", DateTime.Today.AddDays(4), 40,
-            "Develop balance, coordination, and safe movement through a rotating activity circuit."),
-        new("Setting Personal Goals", "Wellness", "Grade 6", DateTime.Today.AddDays(5), 30,
-            "Choose a realistic wellness goal and describe steps for tracking progress.")
+        "Soccer",
+        "Football",
+        "Basketball",
+        "Gymnastics",
+        "Swimming",
+        "Baseball/softball",
+        "Volleyball",
+        "Badminton",
+        "Pickleball",
+        "Team activities",
+        "Tchoukball",
+        "Weightlifting",
+        "Yoga"
     ];
 
-    public ObservableCollection<LessonPlan> VisiblePlans { get; } = [];
-
+    private readonly List<LessonPlan> _allPlans = [];
+    private SupabaseService? _supabase;
     private LessonPlan? _editingPlan;
+    private string _connectionStatus = "Connecting to Supabase…";
+
+    public ObservableCollection<LessonPlan> VisiblePlans { get; } = [];
 
     public LessonPlans()
     {
         InitializeComponent();
         BindingContext = this;
+        SchoolLevelPicker.ItemsSource = SchoolLevels;
         RefreshPlans();
     }
 
-    private void OnAddClicked(object? sender, EventArgs e)
+    protected override async void OnAppearing()
     {
+        base.OnAppearing();
+        _supabase ??= Handler?.MauiContext?.Services.GetService<SupabaseService>();
+        await LoadPlansAsync();
+    }
+
+    private async void OnAccountClicked(object? sender, EventArgs e)
+    {
+        if (_supabase is null)
+            return;
+
+        if (!_supabase.IsAuthenticated)
+        {
+            await Shell.Current.GoToAsync(nameof(AdaptedPE.TeacherSignInPage));
+            return;
+        }
+
+        var confirm = await DisplayAlertAsync("Sign out", "Sign out of the teacher account?", "Sign out", "Cancel");
+        if (!confirm)
+            return;
+
+        try
+        {
+            await _supabase.SignOutAsync();
+            await LoadPlansAsync();
+        }
+        catch (Exception exception)
+        {
+            await DisplayAlertAsync("Sign out failed", exception.Message, "OK");
+        }
+    }
+
+    private async void OnAddClicked(object? sender, EventArgs e)
+    {
+        if (!await RequireTeacherSignInAsync())
+            return;
+
         _editingPlan = null;
         EditorHeading.Text = "New lesson plan";
         TitleEntry.Text = string.Empty;
-        SubjectEntry.Text = string.Empty;
+        SchoolLevelPicker.SelectedIndex = -1;
+        ActivityPicker.ItemsSource = Array.Empty<string>();
+        ActivityPicker.SelectedIndex = -1;
+        CategoryEntry.Text = string.Empty;
+        CategoryEntry.IsReadOnly = false;
         GradeEntry.Text = string.Empty;
         ScheduledDatePicker.Date = DateTime.Today;
         DurationEntry.Text = string.Empty;
@@ -41,15 +110,22 @@ public partial class LessonPlans : ContentPage
         EditorOverlay.IsVisible = true;
     }
 
-    private void OnEditClicked(object? sender, EventArgs e)
+    private async void OnEditClicked(object? sender, EventArgs e)
     {
+        if (!await RequireTeacherSignInAsync())
+            return;
+
         if ((sender as Button)?.CommandParameter is not LessonPlan plan)
             return;
 
         _editingPlan = plan;
         EditorHeading.Text = "Edit lesson plan";
         TitleEntry.Text = plan.Title;
-        SubjectEntry.Text = plan.Subject;
+        SchoolLevelPicker.SelectedItem = plan.SchoolLevel;
+        PopulateActivities();
+        ActivityPicker.SelectedItem = plan.Activity;
+        CategoryEntry.Text = plan.Category;
+        CategoryEntry.IsReadOnly = plan.SchoolLevel == "Elementary";
         GradeEntry.Text = plan.GradeLevel;
         ScheduledDatePicker.Date = plan.ScheduledDate;
         DurationEntry.Text = plan.DurationMinutes.ToString();
@@ -60,6 +136,9 @@ public partial class LessonPlans : ContentPage
 
     private async void OnDeleteClicked(object? sender, EventArgs e)
     {
+        if (!await RequireTeacherSignInAsync())
+            return;
+
         if ((sender as Button)?.CommandParameter is not LessonPlan plan)
             return;
 
@@ -67,23 +146,37 @@ public partial class LessonPlans : ContentPage
         if (!confirm)
             return;
 
-        _allPlans.Remove(plan);
-        RefreshPlans();
+        try
+        {
+            await _supabase!.DeleteLessonPlanAsync(plan);
+            await LoadPlansAsync();
+        }
+        catch (Exception exception)
+        {
+            await DisplayAlertAsync("Unable to delete lesson plan", exception.Message, "OK");
+        }
     }
 
-    private void OnSaveClicked(object? sender, EventArgs e)
+    private async void OnSaveClicked(object? sender, EventArgs e)
     {
+        if (!await RequireTeacherSignInAsync())
+            return;
+
         var title = TitleEntry.Text?.Trim() ?? string.Empty;
-        var subject = SubjectEntry.Text?.Trim() ?? string.Empty;
+        var schoolLevel = SchoolLevelPicker.SelectedItem as string ?? string.Empty;
+        var category = CategoryEntry.Text?.Trim() ?? string.Empty;
+        var activity = ActivityPicker.SelectedItem as string ?? string.Empty;
         var grade = GradeEntry.Text?.Trim() ?? string.Empty;
         var objectives = ObjectivesEditor.Text?.Trim() ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(title) ||
-            string.IsNullOrWhiteSpace(subject) ||
+            string.IsNullOrWhiteSpace(schoolLevel) ||
+            string.IsNullOrWhiteSpace(category) ||
+            string.IsNullOrWhiteSpace(activity) ||
             string.IsNullOrWhiteSpace(grade) ||
             string.IsNullOrWhiteSpace(objectives))
         {
-            ShowValidation("Enter a title, subject, grade, and lesson objectives.");
+            ShowValidation("Complete the title, school level, category, activity, grade, and objectives.");
             return;
         }
 
@@ -93,28 +186,37 @@ public partial class LessonPlans : ContentPage
             return;
         }
 
-        if (_editingPlan is null)
+        var plan = new LessonPlan
         {
-            _allPlans.Insert(0, new LessonPlan(
-                title,
-                subject,
-                grade,
-                ScheduledDatePicker.Date ?? DateTime.Today,
-                duration,
-                objectives));
-        }
-        else
-        {
-            _editingPlan.Title = title;
-            _editingPlan.Subject = subject;
-            _editingPlan.GradeLevel = grade;
-            _editingPlan.ScheduledDate = ScheduledDatePicker.Date ?? DateTime.Today;
-            _editingPlan.DurationMinutes = duration;
-            _editingPlan.Objectives = objectives;
-        }
+            Title = title,
+            SchoolLevel = schoolLevel,
+            Category = category,
+            Activity = activity,
+            GradeLevel = grade,
+            ScheduledDate = ScheduledDatePicker.Date ?? DateTime.Today,
+            DurationMinutes = duration,
+            Objectives = objectives
+        };
 
-        EditorOverlay.IsVisible = false;
-        RefreshPlans();
+        try
+        {
+            if (_editingPlan is null)
+            {
+                await _supabase!.AddLessonPlanAsync(plan);
+            }
+            else
+            {
+                plan.Id = _editingPlan.Id;
+                await _supabase!.UpdateLessonPlanAsync(plan);
+            }
+
+            EditorOverlay.IsVisible = false;
+            await LoadPlansAsync();
+        }
+        catch (Exception exception)
+        {
+            await DisplayAlertAsync("Unable to save lesson plan", exception.Message, "OK");
+        }
     }
 
     private void OnCancelEditorClicked(object? sender, EventArgs e)
@@ -122,9 +224,88 @@ public partial class LessonPlans : ContentPage
         EditorOverlay.IsVisible = false;
     }
 
+    private void OnSchoolLevelChanged(object? sender, EventArgs e)
+    {
+        PopulateActivities();
+        CategoryEntry.Text = string.Empty;
+        CategoryEntry.IsReadOnly = SchoolLevelPicker.SelectedItem as string == "Elementary";
+    }
+
+    private void OnActivityChanged(object? sender, EventArgs e)
+    {
+        if (SchoolLevelPicker.SelectedItem as string == "Elementary" &&
+            ActivityPicker.SelectedItem is string activity &&
+            ElementaryCategories.TryGetValue(activity, out var category))
+        {
+            CategoryEntry.Text = category;
+        }
+    }
+
     private void OnSearchTextChanged(object? sender, TextChangedEventArgs e)
     {
         RefreshPlans(e.NewTextValue);
+    }
+
+    private async Task LoadPlansAsync()
+    {
+        if (_supabase is null)
+        {
+            _connectionStatus = "Supabase service unavailable";
+            UpdateAccountControls();
+            RefreshPlans();
+            return;
+        }
+
+        try
+        {
+            var plans = await _supabase.GetLessonPlansAsync();
+            _allPlans.Clear();
+            _allPlans.AddRange(plans);
+            _connectionStatus = $"{_allPlans.Count} lesson plans from Supabase";
+        }
+        catch (Exception exception)
+        {
+            _allPlans.Clear();
+            _connectionStatus = $"Supabase: {exception.Message}";
+        }
+
+        UpdateAccountControls();
+        RefreshPlans();
+    }
+
+    private async Task<bool> RequireTeacherSignInAsync()
+    {
+        if (_supabase?.IsAuthenticated == true)
+            return true;
+
+        var signIn = await DisplayAlertAsync(
+            "Teacher sign-in required",
+            "Sign in with a teacher account to add, edit, or delete lesson plans.",
+            "Sign in",
+            "Cancel");
+
+        if (signIn)
+            await Shell.Current.GoToAsync(nameof(AdaptedPE.TeacherSignInPage));
+
+        return false;
+    }
+
+    private void PopulateActivities()
+    {
+        var level = SchoolLevelPicker.SelectedItem as string;
+        ActivityPicker.ItemsSource = level switch
+        {
+            "Elementary" => ElementaryCategories.Keys.ToArray(),
+            "Middle School" or "High School" => MiddleHighActivities,
+            _ => Array.Empty<string>()
+        };
+    }
+
+    private void UpdateAccountControls()
+    {
+        var isSignedIn = _supabase?.IsAuthenticated == true;
+        AccountButton.Text = isSignedIn ? "Sign out" : "Teacher sign in";
+        AddPlanButton.IsVisible = isSignedIn;
     }
 
     private void RefreshPlans(string? searchText = null)
@@ -134,7 +315,9 @@ public partial class LessonPlans : ContentPage
             ? _allPlans
             : _allPlans.Where(plan =>
                 plan.Title.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                plan.Subject.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                plan.SchoolLevel.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                plan.Category.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                plan.Activity.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                 plan.GradeLevel.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                 plan.Objectives.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
 
@@ -142,7 +325,7 @@ public partial class LessonPlans : ContentPage
         foreach (var plan in plans)
             VisiblePlans.Add(plan);
 
-        PlanCountLabel.Text = $"{_allPlans.Count} plans · local preview data";
+        PlanCountLabel.Text = _connectionStatus;
     }
 
     private void ShowValidation(string message)
@@ -150,20 +333,4 @@ public partial class LessonPlans : ContentPage
         ValidationLabel.Text = message;
         ValidationLabel.IsVisible = true;
     }
-}
-
-public sealed class LessonPlan(
-    string title,
-    string subject,
-    string gradeLevel,
-    DateTime scheduledDate,
-    int durationMinutes,
-    string objectives)
-{
-    public string Title { get; set; } = title;
-    public string Subject { get; set; } = subject;
-    public string GradeLevel { get; set; } = gradeLevel;
-    public DateTime ScheduledDate { get; set; } = scheduledDate;
-    public int DurationMinutes { get; set; } = durationMinutes;
-    public string Objectives { get; set; } = objectives;
 }

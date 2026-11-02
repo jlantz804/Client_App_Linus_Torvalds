@@ -17,7 +17,8 @@
                 TextColor="#1464D2"
                 BackgroundColor="Transparent"
                 HorizontalOptions="Start"
-                Padding="0" />
+                Padding="0"
+                Clicked="OnBackClicked" />
 
             <Label
                 Text="Teacher Sign in"
@@ -34,6 +35,7 @@
                     FontAttributes="Bold"
                     TextColor="#171717" />
                 <Entry
+                    x:Name="EmailEntry"
                     Placeholder="Enter your email"
                     Keyboard="Email"
                     TextColor="#171717"
@@ -48,6 +50,7 @@
                     FontAttributes="Bold"
                     TextColor="#171717" />
                 <Entry
+                    x:Name="PasswordEntry"
                     Placeholder="Enter your password"
                     IsPassword="True"
                     TextColor="#171717"
@@ -55,7 +58,14 @@
                     BackgroundColor="#F5F7FA" />
             </VerticalStackLayout>
 
+            <Label
+                x:Name="ErrorLabel"
+                IsVisible="False"
+                FontSize="13"
+                TextColor="#A64232" />
+
             <Button
+                x:Name="SignInButton"
                 Text="Sign in"
                 FontSize="17"
                 FontAttributes="Bold"
@@ -63,7 +73,8 @@
                 BackgroundColor="#1464D2"
                 CornerRadius="10"
                 HeightRequest="52"
-                Margin="0,12,0,0" />
+                Margin="0,12,0,0"
+                Clicked="OnSignInClicked" />
 
         </VerticalStackLayout>
     </ScrollView>
