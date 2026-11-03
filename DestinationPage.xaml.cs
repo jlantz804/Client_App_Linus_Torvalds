@@ -31,4 +31,53 @@ public partial class DestinationPage : ContentPage
     {
         await Shell.Current.GoToAsync(nameof(LessonPlans));
     }
+
+
+    private bool _openingActivities = false;
+
+    // Rishi: Open Activities and show any navigation error.
+    private async void OnActivitiesClicked(object? sender, EventArgs e)
+    {
+        if (_openingActivities)
+            return;
+
+        try
+        {
+            _openingActivities = true;
+
+            string code = SchoolLevel switch
+            {
+                "Elementary" => "elementary",
+                "Elementary School" => "elementary",
+                "Middle School" => "middle",
+                "High School" => "high",
+                _ => string.Empty
+            };
+
+            if (string.IsNullOrEmpty(code))
+            {
+                await DisplayAlertAsync(
+                    "School Level",
+                    "Please select a school level first.",
+                    "OK");
+                return;
+            }
+
+            await Shell.Current.GoToAsync(
+                $"{nameof(ActivitiesPage)}?schoolLevel={code}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex.ToString());
+
+            await DisplayAlertAsync(
+                "Activities Error",
+                ex.ToString(),
+                "OK");
+        }
+        finally
+        {
+            _openingActivities = false;
+        }
+    }
 }

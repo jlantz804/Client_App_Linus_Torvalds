@@ -44,6 +44,29 @@ public sealed class SupabaseService
         }
     }
 
+    private readonly SemaphoreSlim _activitiesAuthLock = new(1, 1);
+
+    // Rishi: Sign in anonymously for Activities while the teacher login is not ready.
+    // This uses the authenticated RLS role, without needing email or password.
+    public async Task<string> GetActivitiesAccessTokenAsync()
+    {
+        await InitializeAsync();
+        await _activitiesAuthLock.WaitAsync();
+        try
+        {
+            var session = _client!.Auth.CurrentSession;
+            if (session is null)
+                session = await _client.Auth.SignInAnonymously();
+
+            return session?.AccessToken ?? throw new InvalidOperationException(
+                "Could not start an Activities session. Enable Anonymous Sign-Ins in Supabase Authentication settings.");
+        }
+        finally
+        {
+            _activitiesAuthLock.Release();
+        }
+    }
+
     public async Task<IReadOnlyList<LessonPlan>> GetLessonPlansAsync()
     {
         await InitializeAsync();
