@@ -4,8 +4,16 @@
              x:Class="Client_App.LessonPlans"
              Title="Lesson Plans"
              BackgroundColor="#F4F7F5">
-    <Grid RowDefinitions="Auto,Auto,*" Padding="22,18" RowSpacing="18">
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="22,18" RowSpacing="18">
+        <Button Grid.Row="0"
+                Text="‹  Back"
+                Clicked="OnBackClicked"
+                FontSize="16"
+                TextColor="#1464D2"
+                BackgroundColor="Transparent"
+                HorizontalOptions="Start"
+                Padding="0" />
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalOptions="Center">
             <VerticalStackLayout Spacing="4" VerticalOptions="Center">
                 <Label Text="TEACHER WORKSPACE"
                        FontSize="11"
@@ -30,18 +38,10 @@
                         FontAttributes="Bold"
                         CornerRadius="14"
                         Padding="16,12" />
-                <Button x:Name="AccountButton"
-                        Text="Sign in"
-                        Clicked="OnAccountClicked"
-                        BackgroundColor="#EAF3ED"
-                        TextColor="#216A50"
-                        FontAttributes="Bold"
-                        CornerRadius="14"
-                        Padding="16,10" />
             </VerticalStackLayout>
         </Grid>
 
-        <Border Grid.Row="1"
+        <Border Grid.Row="2"
                 BackgroundColor="White"
                 Stroke="#E1E9E4"
                 StrokeThickness="1"
@@ -61,7 +61,7 @@
         </Border>
 
         <CollectionView x:Name="PlansCollection"
-                        Grid.Row="2"
+                        Grid.Row="3"
                         ItemsSource="{Binding VisiblePlans}"
                         SelectionMode="None">
             <CollectionView.EmptyView>
@@ -166,7 +166,7 @@
         </CollectionView>
 
         <Grid x:Name="EditorOverlay"
-              Grid.RowSpan="3"
+              Grid.RowSpan="4"
               IsVisible="False"
               ZIndex="10"
               BackgroundColor="#660F2118"

@@ -1,4 +1,3 @@
-using Supabase.Gotrue;
 using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
 
@@ -14,8 +13,6 @@ public sealed class SupabaseService
 {
     private readonly SemaphoreSlim _initializationLock = new(1, 1);
     private Supabase.Client? _client;
-
-    public bool IsAuthenticated => _client?.Auth.CurrentSession is not null;
 
     public async Task InitializeAsync()
     {
@@ -36,11 +33,7 @@ public sealed class SupabaseService
 
             var client = new Supabase.Client(
                 SupabaseSettings.ProjectUrl,
-                SupabaseSettings.PublishableKey,
-                new Supabase.SupabaseOptions
-                {
-                    AutoRefreshToken = true
-                });
+                SupabaseSettings.PublishableKey);
 
             await client.InitializeAsync();
             _client = client;
@@ -71,40 +64,22 @@ public sealed class SupabaseService
         return plans;
     }
 
-    public async Task SignInAsync(string email, string password)
-    {
-        await InitializeAsync();
-        await _client!.Auth.SignIn(email, password);
-    }
-
-    public async Task SignOutAsync()
-    {
-        if (_client is not null && IsAuthenticated)
-            await _client.Auth.SignOut();
-    }
-
     public async Task AddLessonPlanAsync(LessonPlan plan)
     {
-        EnsureSignedIn();
+        await InitializeAsync();
         await _client!.From<LessonPlan>().Insert(plan);
     }
 
     public async Task UpdateLessonPlanAsync(LessonPlan plan)
     {
-        EnsureSignedIn();
+        await InitializeAsync();
         await _client!.From<LessonPlan>().Update(plan);
     }
 
     public async Task DeleteLessonPlanAsync(LessonPlan plan)
     {
-        EnsureSignedIn();
+        await InitializeAsync();
         await _client!.From<LessonPlan>().Delete(plan);
-    }
-
-    private void EnsureSignedIn()
-    {
-        if (!IsAuthenticated)
-            throw new InvalidOperationException("Sign in with a teacher account before changing lesson plans.");
     }
 }
 

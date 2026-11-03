@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Client_App;
 
@@ -42,14 +41,15 @@ public partial class LessonPlans : ContentPage
     ];
 
     private readonly List<LessonPlan> _allPlans = [];
-    private SupabaseService? _supabase;
+    private readonly SupabaseService _supabase;
     private LessonPlan? _editingPlan;
     private string _connectionStatus = "Connecting to Supabase…";
 
     public ObservableCollection<LessonPlan> VisiblePlans { get; } = [];
 
-    public LessonPlans()
+    public LessonPlans(SupabaseService supabase)
     {
+        _supabase = supabase;
         InitializeComponent();
         BindingContext = this;
         SchoolLevelPicker.ItemsSource = SchoolLevels;
@@ -59,41 +59,16 @@ public partial class LessonPlans : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        _supabase ??= Handler?.MauiContext?.Services.GetService<SupabaseService>();
         await LoadPlansAsync();
     }
 
-    private async void OnAccountClicked(object? sender, EventArgs e)
+    private async void OnBackClicked(object? sender, EventArgs e)
     {
-        if (_supabase is null)
-            return;
-
-        if (!_supabase.IsAuthenticated)
-        {
-            await Shell.Current.GoToAsync(nameof(AdaptedPE.TeacherSignInPage));
-            return;
-        }
-
-        var confirm = await DisplayAlertAsync("Sign out", "Sign out of the teacher account?", "Sign out", "Cancel");
-        if (!confirm)
-            return;
-
-        try
-        {
-            await _supabase.SignOutAsync();
-            await LoadPlansAsync();
-        }
-        catch (Exception exception)
-        {
-            await DisplayAlertAsync("Sign out failed", exception.Message, "OK");
-        }
+        await Shell.Current.GoToAsync("..");
     }
 
-    private async void OnAddClicked(object? sender, EventArgs e)
+    private void OnAddClicked(object? sender, EventArgs e)
     {
-        if (!await RequireTeacherSignInAsync())
-            return;
-
         _editingPlan = null;
         EditorHeading.Text = "New lesson plan";
         TitleEntry.Text = string.Empty;
@@ -110,11 +85,8 @@ public partial class LessonPlans : ContentPage
         EditorOverlay.IsVisible = true;
     }
 
-    private async void OnEditClicked(object? sender, EventArgs e)
+    private void OnEditClicked(object? sender, EventArgs e)
     {
-        if (!await RequireTeacherSignInAsync())
-            return;
-
         if ((sender as Button)?.CommandParameter is not LessonPlan plan)
             return;
 
@@ -136,9 +108,6 @@ public partial class LessonPlans : ContentPage
 
     private async void OnDeleteClicked(object? sender, EventArgs e)
     {
-        if (!await RequireTeacherSignInAsync())
-            return;
-
         if ((sender as Button)?.CommandParameter is not LessonPlan plan)
             return;
 
@@ -148,7 +117,7 @@ public partial class LessonPlans : ContentPage
 
         try
         {
-            await _supabase!.DeleteLessonPlanAsync(plan);
+            await _supabase.DeleteLessonPlanAsync(plan);
             await LoadPlansAsync();
         }
         catch (Exception exception)
@@ -159,9 +128,6 @@ public partial class LessonPlans : ContentPage
 
     private async void OnSaveClicked(object? sender, EventArgs e)
     {
-        if (!await RequireTeacherSignInAsync())
-            return;
-
         var title = TitleEntry.Text?.Trim() ?? string.Empty;
         var schoolLevel = SchoolLevelPicker.SelectedItem as string ?? string.Empty;
         var category = CategoryEntry.Text?.Trim() ?? string.Empty;
@@ -202,12 +168,12 @@ public partial class LessonPlans : ContentPage
         {
             if (_editingPlan is null)
             {
-                await _supabase!.AddLessonPlanAsync(plan);
+                await _supabase.AddLessonPlanAsync(plan);
             }
             else
             {
                 plan.Id = _editingPlan.Id;
-                await _supabase!.UpdateLessonPlanAsync(plan);
+                await _supabase.UpdateLessonPlanAsync(plan);
             }
 
             EditorOverlay.IsVisible = false;
@@ -248,14 +214,6 @@ public partial class LessonPlans : ContentPage
 
     private async Task LoadPlansAsync()
     {
-        if (_supabase is null)
-        {
-            _connectionStatus = "Supabase service unavailable";
-            UpdateAccountControls();
-            RefreshPlans();
-            return;
-        }
-
         try
         {
             var plans = await _supabase.GetLessonPlansAsync();
@@ -269,25 +227,7 @@ public partial class LessonPlans : ContentPage
             _connectionStatus = $"Supabase: {exception.Message}";
         }
 
-        UpdateAccountControls();
         RefreshPlans();
-    }
-
-    private async Task<bool> RequireTeacherSignInAsync()
-    {
-        if (_supabase?.IsAuthenticated == true)
-            return true;
-
-        var signIn = await DisplayAlertAsync(
-            "Teacher sign-in required",
-            "Sign in with a teacher account to add, edit, or delete lesson plans.",
-            "Sign in",
-            "Cancel");
-
-        if (signIn)
-            await Shell.Current.GoToAsync(nameof(AdaptedPE.TeacherSignInPage));
-
-        return false;
     }
 
     private void PopulateActivities()
@@ -299,13 +239,6 @@ public partial class LessonPlans : ContentPage
             "Middle School" or "High School" => MiddleHighActivities,
             _ => Array.Empty<string>()
         };
-    }
-
-    private void UpdateAccountControls()
-    {
-        var isSignedIn = _supabase?.IsAuthenticated == true;
-        AccountButton.Text = isSignedIn ? "Sign out" : "Teacher sign in";
-        AddPlanButton.IsVisible = isSignedIn;
     }
 
     private void RefreshPlans(string? searchText = null)

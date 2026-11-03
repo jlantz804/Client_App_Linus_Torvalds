@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Client_App.DestinationPage"
+             BackgroundColor="#F4F7F5">
+    <ScrollView>
+        <VerticalStackLayout Padding="22,25" Spacing="16">
+            <Button Text="‹  Back"
+                    Clicked="OnBackClicked"
+                    FontSize="16"
+                    TextColor="#1464D2"
+                    BackgroundColor="Transparent"
+                    HorizontalOptions="Start"
+                    Padding="0" />
+            <Label Text="Adapted PE"
+                   FontSize="30"
+                   FontAttributes="Bold"
+                   TextColor="#111111"
+                   HorizontalTextAlignment="Center" />
+            <Label x:Name="SchoolLevelLabel"
+                   Text="Choose a section"
+                   FontSize="17"
+                   TextColor="#667085"
+                   HorizontalTextAlignment="Center"
+                   Margin="0,0,0,8" />
+            <Button Text="Activities"
+                    IsEnabled="False"
+                    BackgroundColor="#FFE29B"
+                    TextColor="#171717"
+                    FontSize="19"
+                    FontAttributes="Bold"
+                    CornerRadius="18"
+                    HeightRequest="82" />
+            <Button Text="Lesson Plans"
+                    Clicked="OnLessonPlansClicked"
+                    BackgroundColor="#B9DDFB"
+                    TextColor="#171717"
+                    FontSize="19"
+                    FontAttributes="Bold"
+                    CornerRadius="18"
+                    HeightRequest="82" />
+            <Button Text="Drills"
+                    IsEnabled="False"
+                    BackgroundColor="#BFE8D0"
+                    TextColor="#171717"
+                    FontSize="19"
+                    FontAttributes="Bold"
+                    CornerRadius="18"
+                    HeightRequest="82" />
+            <Button Text="Equipment"
+                    IsEnabled="False"
+                    BackgroundColor="#E8D7F5"
+                    TextColor="#171717"
+                    FontSize="19"
+                    FontAttributes="Bold"
+                    CornerRadius="18"
+                    HeightRequest="82" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
