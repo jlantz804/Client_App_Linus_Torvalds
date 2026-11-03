@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Client_App;
 
@@ -17,9 +17,10 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<SupabaseService>();
 
-        // Rishi: Register Activities for Supabase
-        builder.Services.AddSingleton<ActivitiesService>();
-        builder.Services.AddTransient<ActivitiesPage>();
+		// Rishi: Register Activities for Supabase
+		builder.Services.AddSingleton<ActivitiesService>();
+		builder.Services.AddTransient<ActivitiesPage>();
+		builder.Services.AddTransient<EquipmentModificationsPage>();
 
 
 #if DEBUG

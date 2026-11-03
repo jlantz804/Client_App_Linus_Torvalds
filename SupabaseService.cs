@@ -1,5 +1,7 @@
 using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
+using Client_App.Models;
+using System.Net.Http.Json;
 
 namespace Client_App;
 
@@ -13,7 +15,7 @@ public sealed class SupabaseService
 {
     private readonly SemaphoreSlim _initializationLock = new(1, 1);
     private Supabase.Client? _client;
-
+    private HttpClient equipmentHttp = new HttpClient();
     public async Task InitializeAsync()
     {
         if (_client is not null)
@@ -111,6 +113,48 @@ public sealed class SupabaseService
     {
         await InitializeAsync();
         await _client!.From<LessonPlan>().Delete(plan);
+    }
+
+    //Methods for EquipmentModifications - ALEX
+    public async Task<List<ActivityItem>?> GetEquipmentActivitiesAsync()
+    {
+        string token = await GetActivitiesAccessTokenAsync();
+
+        string url = SupabaseSettings.ProjectUrl
+            + "/rest/v1/activities?select=id,name&order=name.asc";
+
+        using HttpRequestMessage request =
+            new HttpRequestMessage(HttpMethod.Get, url);
+
+        request.Headers.Add("apikey", SupabaseSettings.PublishableKey);
+        request.Headers.Add("Authorization", "Bearer " + token);
+
+        using HttpResponseMessage response =
+            await equipmentHttp.SendAsync(request);
+
+        return await response.Content
+            .ReadFromJsonAsync<List<ActivityItem>>();
+    }
+
+    public async Task AddEquipmentModificationAsync(
+        EquipmentModification modification)
+    {
+        string token = await GetActivitiesAccessTokenAsync();
+
+        string url = SupabaseSettings.ProjectUrl
+            + "/rest/v1/equipment_modifications";
+
+        using HttpRequestMessage request =
+            new HttpRequestMessage(HttpMethod.Post, url);
+
+        request.Headers.Add("apikey", SupabaseSettings.PublishableKey);
+        request.Headers.Add("Authorization", "Bearer " + token);
+        request.Headers.Add("Prefer", "return=minimal");
+
+        request.Content = JsonContent.Create(modification);
+
+        using HttpResponseMessage response =
+            await equipmentHttp.SendAsync(request);
     }
 }
 
