@@ -3,7 +3,7 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="AdaptedPE.HomePage"
+    x:Class="AdaptedPE.SchoolLevelPage"
     BackgroundColor="White">
 
     <Grid>
@@ -36,6 +36,9 @@
                 HeightRequest="112"
                 StrokeShape="RoundRectangle 18"
                 Margin="0,0,0,14">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnElementarySelected" />
+                </Border.GestureRecognizers>
                 <Grid
                     ColumnDefinitions="90,*,35"
                     Padding="10,12">
@@ -84,6 +87,9 @@
                 HeightRequest="112"
                 StrokeShape="RoundRectangle 18"
                 Margin="0,0,0,14">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnMiddleSchoolSelected" />
+                </Border.GestureRecognizers>
                 <Grid
                     ColumnDefinitions="90,*,35"
                     Padding="10,12">
@@ -131,6 +137,9 @@
                 StrokeThickness="0"
                 HeightRequest="112"
                 StrokeShape="RoundRectangle 18">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnHighSchoolSelected" />
+                </Border.GestureRecognizers>
                 <Grid
                     ColumnDefinitions="90,*,35"
                     Padding="10,12">
@@ -174,17 +183,6 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <Label
-            Text="Are you a teacher?  Sign in"
-            FontSize="17"
-            TextColor="#1464D2"
-            HorizontalTextAlignment="Center"
-            HorizontalOptions="Center"
-            VerticalOptions="End"
-            Margin="22,0,22,24"
-            Padding="8,6"
-            BackgroundColor="White">
-        </Label>
     </Grid>
 
 </ContentPage>

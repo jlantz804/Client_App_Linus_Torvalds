@@ -1,12 +1,5 @@
 namespace AdaptedPE;
 
-/*
-Author: Joey Lantz
-Date: October 4th
-Description: This is the teacher sign-in page logic
-Bugs: None found
-*/
-
 public partial class TeacherSignInPage : ContentPage
 {
     public TeacherSignInPage()
@@ -14,4 +7,8 @@ public partial class TeacherSignInPage : ContentPage
         InitializeComponent();
     }
 
+    private async void OnSignInClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync(nameof(SchoolLevelPage));
+    }
 }
