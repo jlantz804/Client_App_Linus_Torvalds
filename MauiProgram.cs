@@ -20,6 +20,7 @@ public static class MauiProgram
 		// Rishi: Register Activities for Supabase
 		builder.Services.AddSingleton<ActivitiesService>();
 		builder.Services.AddTransient<ActivitiesPage>();
+		builder.Services.AddTransient<EquipmentModificationsPage>();
 
 
 #if DEBUG

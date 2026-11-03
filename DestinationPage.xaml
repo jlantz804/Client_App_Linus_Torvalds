@@ -43,7 +43,7 @@
                                 CornerRadius="18"
                                 HeightRequest="82"/>
                         <Button Text="Equipment"
-                                IsEnabled="False"
+                                Clicked="OnEquipmentClicked"
                                 BackgroundColor="#E8D7F5"
                                 TextColor="#171717"
                                 FontSize="19"
