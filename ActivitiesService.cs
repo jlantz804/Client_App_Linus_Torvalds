@@ -47,7 +47,11 @@ public sealed class ActivitiesService
     {
         using var request = await CreateRequestAsync(HttpMethod.Post, "activities");
         request.Content = new StringContent(
-            JsonSerializer.Serialize(new { category_id = categoryId, name }),
+            JsonSerializer.Serialize(new
+            {
+                category_id = categoryId,
+                name
+            }),
             Encoding.UTF8, "application/json");
         request.Headers.TryAddWithoutValidation("Prefer", "return=minimal");
         using var response = await Http.SendAsync(request);
@@ -64,13 +68,19 @@ public sealed class ActivitiesService
         string json = await ReadResponseAsync(response);
         var deleted = JsonSerializer.Deserialize<List<ActivityItem>>(json) ?? [];
         if (deleted.Count == 0)
+        {
             throw new InvalidOperationException("No activity was deleted. Check the Supabase RLS policies.");
+        }
     }
 
     private static async Task<string> ReadResponseAsync(HttpResponseMessage response)
     {
         string body = await response.Content.ReadAsStringAsync();
-        if (response.IsSuccessStatusCode) return body;
+        if (response.IsSuccessStatusCode)
+        {
+            return body;
+        }
+
         string detail = body;
         try
         {

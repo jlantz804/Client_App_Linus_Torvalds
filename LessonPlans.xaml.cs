@@ -88,7 +88,9 @@ public partial class LessonPlans : ContentPage
     private void OnEditClicked(object? sender, EventArgs e)
     {
         if ((sender as Button)?.CommandParameter is not LessonPlan plan)
+        {
             return;
+        }
 
         _editingPlan = plan;
         EditorHeading.Text = "Edit lesson plan";
@@ -109,11 +111,15 @@ public partial class LessonPlans : ContentPage
     private async void OnDeleteClicked(object? sender, EventArgs e)
     {
         if ((sender as Button)?.CommandParameter is not LessonPlan plan)
+        {
             return;
+        }
 
         var confirm = await DisplayAlertAsync("Delete lesson plan", $"Delete ‘{plan.Title}’?", "Delete", "Cancel");
         if (!confirm)
+        {
             return;
+        }
 
         try
         {
@@ -256,7 +262,9 @@ public partial class LessonPlans : ContentPage
 
         VisiblePlans.Clear();
         foreach (var plan in plans)
+        {
             VisiblePlans.Add(plan);
+        }
 
         PlanCountLabel.Text = _connectionStatus;
     }
