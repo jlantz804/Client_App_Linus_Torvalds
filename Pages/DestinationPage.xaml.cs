@@ -39,7 +39,9 @@ public partial class DestinationPage : ContentPage
     private async void OnActivitiesClicked(object? sender, EventArgs e)
     {
         if (_openingActivities)
+        {
             return;
+        }
 
         try
         {

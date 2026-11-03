@@ -43,13 +43,21 @@ public partial class ActivitiesPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        if (_loaded) return;
+        if (_loaded)
+        {
+            return;
+        }
+
         await LoadCategoriesAsync();
     }
 
     private async Task LoadCategoriesAsync()
     {
-        if (_busy) return;
+        if (_busy)
+        {
+            return;
+        }
+
         SetBusy(true, "Loading categories...");
         try
         {
@@ -90,7 +98,11 @@ public partial class ActivitiesPage : ContentPage
 
     private async Task OpenCategoryAsync(string categoryName)
     {
-        if (_busy) return;
+        if (_busy)
+        {
+            return;
+        }
+
         _selectedCategory = _categories.FirstOrDefault(c => c.Name == categoryName);
         if (_selectedCategory is null)
         {
@@ -119,19 +131,33 @@ public partial class ActivitiesPage : ContentPage
 
     private async Task ReadActivitiesAsync()
     {
-        if (_selectedCategory is null) return;
+        if (_selectedCategory is null)
+        {
+            return;
+        }
+
         var items = await _activities.GetActivitiesAsync(_selectedCategory.Id);
         ActivityList.Children.Clear();
         foreach (var item in items)
+        {
             ActivityList.Children.Add(CreateActivityCard(item));
+        }
+
         StatusLabel.Text = $"{items.Count} activities in {CategoryTitle.Text}.";
     }
 
     private async Task RefreshActivitiesAsync()
     {
-        if (_busy) return;
+        if (_busy)
+        {
+            return;
+        }
+
         SetBusy(true, "Loading activities...");
-        try { await ReadActivitiesAsync(); }
+        try
+        {
+            await ReadActivitiesAsync();
+        }
         catch (Exception ex) { await DisplayAlertAsync("Supabase error", ex.Message, "OK"); }
         finally { SetBusy(false); }
     }
@@ -187,12 +213,19 @@ public partial class ActivitiesPage : ContentPage
 
     private async void OnAddActivityClicked(object? sender, EventArgs e)
     {
-        if (_busy || _selectedCategory is null) return;
+        if (_busy || _selectedCategory is null)
+        {
+            return;
+        }
+
         var name = await DisplayPromptAsync("Add Activity",
             $"New activity in {_selectedCategory.Name}:",
             "Add", "Cancel", placeholder: "Activity name", maxLength: 100);
         name = name?.Trim();
-        if (string.IsNullOrWhiteSpace(name)) return;
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
 
         SetBusy(true, "Adding activity...");
         try
@@ -206,10 +239,17 @@ public partial class ActivitiesPage : ContentPage
 
     private async Task RemoveActivityAsync(ActivityItem item)
     {
-        if (_busy) return;
+        if (_busy)
+        {
+            return;
+        }
+
         bool confirm = await DisplayAlertAsync("Remove Activity",
             $"Remove '{item.Name}' from this school level?", "Remove", "Cancel");
-        if (!confirm) return;
+        if (!confirm)
+        {
+            return;
+        }
 
         SetBusy(true, "Removing activity...");
         try
@@ -226,6 +266,9 @@ public partial class ActivitiesPage : ContentPage
         _busy = busy;
         BusySpinner.IsRunning = BusySpinner.IsVisible = busy;
         AddActivityButton.IsEnabled = !busy;
-        if (status is not null) StatusLabel.Text = status;
+        if (status is not null)
+        {
+            StatusLabel.Text = status;
+        }
     }
 }

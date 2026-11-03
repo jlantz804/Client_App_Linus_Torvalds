@@ -15,17 +15,21 @@ public sealed class SupabaseService
 {
     private readonly SemaphoreSlim _initializationLock = new(1, 1);
     private Supabase.Client? _client;
-    private HttpClient equipmentHttp = new HttpClient();
+    private HttpClient _equipmentHttp = new HttpClient();
     public async Task InitializeAsync()
     {
         if (_client is not null)
+        {
             return;
+        }
 
         await _initializationLock.WaitAsync();
         try
         {
             if (_client is not null)
+            {
                 return;
+            }
 
             if (SupabaseSettings.ProjectUrl.Contains("YOUR_PROJECT_REF", StringComparison.Ordinal) ||
                 SupabaseSettings.PublishableKey.Contains("YOUR_SUPABASE_PUBLISHABLE_KEY", StringComparison.Ordinal))
@@ -58,7 +62,9 @@ public sealed class SupabaseService
         {
             var session = _client!.Auth.CurrentSession;
             if (session is null)
+            {
                 session = await _client.Auth.SignInAnonymously();
+            }
 
             return session?.AccessToken ?? throw new InvalidOperationException(
                 "Could not start an Activities session. Enable Anonymous Sign-Ins in Supabase Authentication settings.");
@@ -83,7 +89,9 @@ public sealed class SupabaseService
 
             plans.AddRange(response.Models);
             if (response.Models.Count < pageSize)
+            {
                 break;
+            }
         }
 
         return plans;
@@ -122,7 +130,7 @@ public sealed class SupabaseService
         request.Headers.Add("Authorization", "Bearer " + token);
 
         using HttpResponseMessage response =
-            await equipmentHttp.SendAsync(request);
+            await _equipmentHttp.SendAsync(request);
 
         return await response.Content
             .ReadFromJsonAsync<List<ActivityItem>>();
@@ -146,7 +154,7 @@ public sealed class SupabaseService
         request.Content = JsonContent.Create(modification);
 
         using HttpResponseMessage response =
-            await equipmentHttp.SendAsync(request);
+            await _equipmentHttp.SendAsync(request);
     }
 }
 
@@ -154,7 +162,10 @@ public sealed class SupabaseService
 public sealed class LessonPlan : BaseModel
 {
     [PrimaryKey("id", false)]
-    public Guid Id { get; set; }
+    public Guid Id
+    {
+        get; set;
+    }
 
     [Column("title")]
     public string Title { get; set; } = string.Empty;
@@ -172,10 +183,16 @@ public sealed class LessonPlan : BaseModel
     public string GradeLevel { get; set; } = string.Empty;
 
     [Column("scheduled_date")]
-    public DateTime ScheduledDate { get; set; }
+    public DateTime ScheduledDate
+    {
+        get; set;
+    }
 
     [Column("duration_minutes")]
-    public int DurationMinutes { get; set; }
+    public int DurationMinutes
+    {
+        get; set;
+    }
 
     [Column("objectives")]
     public string Objectives { get; set; } = string.Empty;
