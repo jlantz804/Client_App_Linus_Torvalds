@@ -4,9 +4,9 @@ namespace Client_App;
 
 public partial class LessonPlans : ContentPage
 {
-    private static readonly string[] SchoolLevels = ["Elementary", "Middle School", "High School"];
+    private static readonly string[] _schoolLevels = ["Elementary", "Middle School", "High School"];
 
-    private static readonly Dictionary<string, string> ElementaryCategories = new(StringComparer.Ordinal)
+    private static readonly Dictionary<string, string> _elementaryCategories = new(StringComparer.Ordinal)
     {
         ["Overhand throwing"] = "Object control skills",
         ["Underhand tossing"] = "Object control skills",
@@ -23,7 +23,7 @@ public partial class LessonPlans : ContentPage
         ["Jump"] = "Locomotor movements"
     };
 
-    private static readonly string[] MiddleHighActivities =
+    private static readonly string[] _middleHighActivities =
     [
         "Soccer",
         "Football",
@@ -52,7 +52,7 @@ public partial class LessonPlans : ContentPage
         _supabase = supabase;
         InitializeComponent();
         BindingContext = this;
-        SchoolLevelPicker.ItemsSource = SchoolLevels;
+        SchoolLevelPicker.ItemsSource = _schoolLevels;
         RefreshPlans();
     }
 
@@ -120,7 +120,6 @@ public partial class LessonPlans : ContentPage
         {
             return;
         }
-
         try
         {
             await _supabase.DeleteLessonPlanAsync(plan);
@@ -207,7 +206,7 @@ public partial class LessonPlans : ContentPage
     {
         if (SchoolLevelPicker.SelectedItem as string == "Elementary" &&
             ActivityPicker.SelectedItem is string activity &&
-            ElementaryCategories.TryGetValue(activity, out var category))
+            _elementaryCategories.TryGetValue(activity, out var category))
         {
             CategoryEntry.Text = category;
         }
@@ -241,8 +240,8 @@ public partial class LessonPlans : ContentPage
         var level = SchoolLevelPicker.SelectedItem as string;
         ActivityPicker.ItemsSource = level switch
         {
-            "Elementary" => ElementaryCategories.Keys.ToArray(),
-            "Middle School" or "High School" => MiddleHighActivities,
+            "Elementary" => _elementaryCategories.Keys.ToArray(),
+            "Middle School" or "High School" => _middleHighActivities,
             _ => Array.Empty<string>()
         };
     }
