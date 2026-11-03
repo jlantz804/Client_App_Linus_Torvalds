@@ -68,3 +68,71 @@ SELECT school_level FROM public.activity_categories;
 
 **How checked:** SQL review.
 
+### 13. camelCase for C# parameters and local variables [AM]
+
+**Standard:** Use camelCase for parameters and local variables.
+
+**Bad:**
+```csharp
+void ShowActivities(string SchoolLevel) { }
+```
+
+**Good:**
+```csharp
+void ShowActivities(string schoolLevel) { }
+```
+
+**How checked:** Look at parameters and local variables in C# files.
+
+### 14. Keep C# comments short and useful [AM]
+
+**Standard:** Use // comments for non-obvious actions. Explain why a certain action was done instead of only what it is doing.
+**Bad:**
+```csharp
+// load activites
+await LoadActivitiesAsync();
+```
+
+**Good:**
+```csharp
+// Reload after deleting so the screen matches Supabase.
+await LoadActivitiesAsync();
+```
+
+**How checked:** Look over all C# file comments.
+
+### 15. Use WHERE when using SQL DELETE AND UPDATE [AM]
+
+**Standard:** Every DELETE or UPDATE must use a WHERE  to filter specific rows, unless the group unanimously wants to change entire tables.
+
+**Bad:**
+```sql
+DELETE FROM Public.Activities;
+```
+
+**Good:**
+```sql
+DELETE FROM Public.Activities WHERE id = 1;
+```
+
+**How checked:** Look over all SQL queries.
+
+### 16. SQL primary/foreign keys [AM]
+
+**Standard:** Define a primary key for each new table and a foreign-key constraint for columns that reference another table.
+
+**Bad:**
+```sql
+CREATE TABLE Activities (id INT, category_id INT);
+```
+
+**Good:**
+```sql
+CREATE TABLE Activities (
+    id INT PRIMARY KEY,
+    category_id INT NOT NULL REFERENCES activity_categories(id)
+);
+```
+
+**How checked:** Look over all SQL queries.
+
