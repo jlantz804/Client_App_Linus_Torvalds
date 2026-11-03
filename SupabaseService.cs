@@ -15,7 +15,7 @@ public sealed class SupabaseService
 {
     private readonly SemaphoreSlim _initializationLock = new(1, 1);
     private Supabase.Client? _client;
-    private HttpClient equipmentHttp = new HttpClient();
+    private HttpClient _equipmentHttp = new HttpClient();
     public async Task InitializeAsync()
     {
         if (_client is not null)
@@ -130,7 +130,7 @@ public sealed class SupabaseService
         request.Headers.Add("Authorization", "Bearer " + token);
 
         using HttpResponseMessage response =
-            await equipmentHttp.SendAsync(request);
+            await _equipmentHttp.SendAsync(request);
 
         return await response.Content
             .ReadFromJsonAsync<List<ActivityItem>>();
@@ -154,7 +154,7 @@ public sealed class SupabaseService
         request.Content = JsonContent.Create(modification);
 
         using HttpResponseMessage response =
-            await equipmentHttp.SendAsync(request);
+            await _equipmentHttp.SendAsync(request);
     }
 }
 
