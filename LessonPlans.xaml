@@ -5,14 +5,7 @@
              Title="Lesson Plans"
              BackgroundColor="#F4F7F5">
     <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="22,18" RowSpacing="18">
-        <Button Grid.Row="0"
-                Text="‹  Back"
-                Clicked="OnBackClicked"
-                FontSize="16"
-                TextColor="#1464D2"
-                BackgroundColor="Transparent"
-                HorizontalOptions="Start"
-                Padding="0" />
+        
         <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalOptions="Center">
             <VerticalStackLayout Spacing="4" VerticalOptions="Center">
                 <Label Text="TEACHER WORKSPACE"

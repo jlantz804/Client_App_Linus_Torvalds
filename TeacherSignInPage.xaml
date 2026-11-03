@@ -20,7 +20,7 @@
             Margin="0,12,0,0" />
 
         <Label
-            Text="Prototype access — no account required."
+            Text="I'll implement login later - Joey"
             FontSize="16"
             TextColor="#667085"
             HorizontalTextAlignment="Center" />

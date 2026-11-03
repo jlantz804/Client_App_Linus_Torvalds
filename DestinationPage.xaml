@@ -5,13 +5,7 @@
              BackgroundColor="#F4F7F5">
     <ScrollView>
         <VerticalStackLayout Padding="22,25" Spacing="16">
-            <Button Text="‹  Back"
-                    Clicked="OnBackClicked"
-                    FontSize="16"
-                    TextColor="#1464D2"
-                    BackgroundColor="Transparent"
-                    HorizontalOptions="Start"
-                    Padding="0" />
+           
             <Label Text="Adapted PE"
                    FontSize="30"
                    FontAttributes="Bold"

@@ -219,7 +219,7 @@ public partial class LessonPlans : ContentPage
             var plans = await _supabase.GetLessonPlansAsync();
             _allPlans.Clear();
             _allPlans.AddRange(plans);
-            _connectionStatus = $"{_allPlans.Count} lesson plans from Supabase";
+            _connectionStatus = $"{_allPlans.Count} lesson plans available";
         }
         catch (Exception exception)
         {
