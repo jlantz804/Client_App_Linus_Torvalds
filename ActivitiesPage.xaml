@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Rishi: Activities for each school level -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Client_App.ActivitiesPage"
+             Title="Activities"
+             BackgroundColor="#F4F7F5">
+    <ScrollView>
+        <VerticalStackLayout Padding="22,24,22,36" Spacing="14">
+            <Label Text="Activities" FontSize="30" FontAttributes="Bold"
+                   TextColor="#18352B" />
+            <Label x:Name="SchoolLabel" TextColor="#667085" FontSize="17" />
+
+            <!-- Elementary starts with two categories. -->
+            <VerticalStackLayout x:Name="CategoryPanel" IsVisible="False" Spacing="14">
+                <Label Text="Choose an activity category" FontSize="19"
+                       FontAttributes="Bold" TextColor="#18352B" Margin="0,12,0,4" />
+                <Button Text="Object Control Skills"
+                        Clicked="OnObjectControlClicked"
+                        BackgroundColor="#FFE29B" TextColor="#171717"
+                        FontAttributes="Bold" FontSize="18"
+                        CornerRadius="18" HeightRequest="80" />
+                <Button Text="Locomotor Movements"
+                        Clicked="OnLocomotorClicked"
+                        BackgroundColor="#B9DDFB" TextColor="#171717"
+                        FontAttributes="Bold" FontSize="18"
+                        CornerRadius="18" HeightRequest="80" />
+            </VerticalStackLayout>
+
+            <!-- Middle/High go straight to this activity list. -->
+            <VerticalStackLayout x:Name="ActivityPanel" IsVisible="False" Spacing="12">
+                <Button x:Name="BackToCategoriesButton"
+                        Text="‹ Back to Categories" IsVisible="False"
+                        Clicked="OnBackToCategoriesClicked"
+                        HorizontalOptions="Start" BackgroundColor="Transparent"
+                        TextColor="#216A50" />
+                <Label x:Name="CategoryTitle" FontSize="21"
+                       FontAttributes="Bold" TextColor="#18352B" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Button x:Name="AddActivityButton" Grid.Column="0"
+                            Text="+ Add Activity" Clicked="OnAddActivityClicked"
+                            BackgroundColor="#216A50" TextColor="White"
+                            FontAttributes="Bold" HeightRequest="52" CornerRadius="12" />
+                    <Button Grid.Column="1" Text="Refresh"
+                            Clicked="OnRefreshClicked"
+                            BackgroundColor="#E5ECE8" TextColor="#18352B"
+                            CornerRadius="12" />
+                </Grid>
+                <VerticalStackLayout x:Name="ActivityList" Spacing="10" />
+            </VerticalStackLayout>
+
+            <ActivityIndicator x:Name="BusySpinner"
+                               IsRunning="False" IsVisible="False"
+                               Color="#216A50" />
+            <Label x:Name="StatusLabel" TextColor="#667085" FontSize="13"
+                   LineBreakMode="WordWrap" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
