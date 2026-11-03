@@ -80,4 +80,10 @@ public partial class DestinationPage : ContentPage
             _openingActivities = false;
         }
     }
+
+    // For EquipmentModifications ALEX
+    private async void OnEquipmentClicked(object? sender, EventArgs e)
+{
+    await Shell.Current.GoToAsync(nameof(EquipmentModificationsPage));
+}
 }
