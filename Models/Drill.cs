@@ -1,89 +1,100 @@
-using System.ComponentModel;
-using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
-using Supabase.Postgrest.Attributes;
-using Supabase.Postgrest.Models;
 
-namespace Client_App.Model;
+namespace Client_App.Models;
 
-[Table("drills")]
-public class Drill : ContentPage 
+public sealed class Drill
 {
-    int _drillId;
+    // Omitted from the JSON when 0, so the database generates it on insert
+    [JsonPropertyName("drillid")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public long DrillId
+    {
+        get; set;
+    }
+
+    // Null if the activity was removed (FK is ON DELETE SET NULL)
+    [JsonPropertyName("activity_id")]
+    public long? ActivityId
+    {
+        get; set;
+    }
+
+    // Display only, not sent to the database
+    [JsonIgnore]
+    public string ActivityName { get; set; } = string.Empty;
+
+    // Display only: lets the add-drill form remember which category was picked
+    [JsonIgnore]
+    public long? CategoryId
+    {
+        get; set;
+    }
+    // Display only: lets the add-drill form remember which school level was picked
+    [JsonIgnore]
+    public string SchoolLevel { get; set; } = string.Empty;
+
+    // Display only, not sent to the database
+    [JsonIgnore]
+    public string CategoryName { get; set; } = string.Empty;
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = string.Empty;
+
+    [JsonPropertyName("image_url")]
+    public string? ImageUrl
+    {
+        get; set;
+    }
+
+    [JsonPropertyName("video_url")]
+    public string? VideoUrl
+    {
+        get; set;
+    }
+
+    // Maps to the text[] column as a JSON array
+    [JsonPropertyName("steps")]
+    public List<string> Steps { get; set; } = [];
+
+    // Display helpers, aren't sent to the database
+    [JsonIgnore]
+    public string ImageMark => string.IsNullOrWhiteSpace(ImageUrl) ? "✗" : "✓";
+
+    [JsonIgnore]
+    public string VideoMark => string.IsNullOrWhiteSpace(VideoUrl) ? "✗" : "✓";
+
+    [JsonIgnore]
+    public string StepsText => string.Join("\n", Steps.Select((s, i) => $"{i + 1}. {s}"));
+
+    public Drill()
+    {
+    }
+
+    public Drill(long? activityId, string activityName, string name, string description,
+                 string? image, string? video, List<string> steps)
+    {
+        ActivityId = activityId;
+        ActivityName = activityName;
+        Name = name;
+        Description = description;
+        ImageUrl = image;
+        VideoUrl = video;
+        Steps = steps;
+    }
+}
+
+/* int _drillId;
     int? _activityId;
     string _activityName = "";
     string _name = "";
     string _description = "";
     string? _imageUrl;
     string? _videoUrl;
-    List<string> _steps = new (); 
-    
-    [PrimaryKey("drillid", false)]
-    public int DrillId
-    {
-        get => _drillId;
-        set => SetProperty(ref _drillId, value);
-    }
-
-    [Column("activity_id")]
-    public int? ActivityId
-    {
-        get => _activityId;
-        set => SetProperty(ref _activityId, value);
-    }
-    
-    [JsonIgnore]
-    public string ActivityName
-    {
-        get => _activityName;
-        set => SetProperty(ref _activityName, value ?? "");
-    }
-
-    [Column("name")]
-    public string Name
-    {
-        get => _name;
-        set => SetProperty(ref _name, value ?? "");
-    }
-
-    [Column("description")]
-    public string Description
-    {
-        get => _description;
-        set => SetProperty(ref _description, value ?? "");
-    }
-
-    [Column("image_url")]
-    public string? ImageUrl
-    {
-        get => _imageUrl;
-        set => SetProperty(ref _imageUrl, value);
-    }
-
-    [Column("video_url")]
-    public string? VideoUrl
-    {
-        get => _videoUrl;
-        set => SetProperty(ref _videoUrl, value);
-    }
-
-    [Column("steps")]
-    public List<string> Steps
-    {
-        get => _steps;
-        set
-        {
-            if (SetProperty(ref _steps, value ?? new()))
-                OnPropertyChanged(nameof(StepsText));
-        }
-    }
-
-    // Display helpers (no [Column], so they aren't sent to the database)
-    [JsonIgnore] public string ImageMark => string.IsNullOrWhiteSpace(ImageUrl) ? "✗" : "✓";
-    [JsonIgnore] public string VideoMark => string.IsNullOrWhiteSpace(VideoUrl) ? "✗" : "✓";
-    [JsonIgnore] public string StepsText => string.Join("\n", Steps.Select((s, i) => $"{i + 1}. {s}"));
-
-    public Drill(int activityId, string activityName, string name, string description, string image, string video, List<string> steps)
+    List<string> _steps = new (); */
+/* public Drill(int activityId, string activityName, string name, string description, string image, string video, List<string> steps)
     {
         ActivityId = activityId;
         ActivityName = activityName;
@@ -111,4 +122,4 @@ public class StepItem : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
-}
+} */
