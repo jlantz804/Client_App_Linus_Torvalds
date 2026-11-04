@@ -38,8 +38,8 @@ public partial class DestinationPage : ContentPage
     // Rishi: Open Activities and show any navigation error.
     private async void OnActivitiesClicked(object? sender, EventArgs e)
     {
-        if (_openingActivities)
-            return;
+        if (_openingActivities){
+            return; }
 
         try
         {

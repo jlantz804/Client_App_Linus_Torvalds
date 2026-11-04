@@ -8,7 +8,7 @@ namespace Client_App;
 // Rishi: Keep Activities database code separate from Joey's Lesson Plans code.
 public sealed class ActivitiesService
 {
-    private static readonly HttpClient Http = new();
+    private static readonly HttpClient _http = new();
     private readonly SupabaseService _supabase;
 
     public ActivitiesService(SupabaseService supabase)
@@ -31,7 +31,7 @@ public sealed class ActivitiesService
         string code = Uri.EscapeDataString(schoolLevel);
         using var request = await CreateRequestAsync(HttpMethod.Get,
             $"activity_categories?select=id,school_level,name&school_level=eq.{code}&order=id.asc");
-        using var response = await Http.SendAsync(request);
+        using var response = await _http.SendAsync(request);
         return JsonSerializer.Deserialize<List<ActivityCategory>>(await ReadResponseAsync(response)) ?? [];
     }
 
@@ -39,7 +39,7 @@ public sealed class ActivitiesService
     {
         using var request = await CreateRequestAsync(HttpMethod.Get,
             $"activities?select=id,category_id,name,description&category_id=eq.{categoryId}&order=id.asc");
-        using var response = await Http.SendAsync(request);
+        using var response = await _http.SendAsync(request);
         return JsonSerializer.Deserialize<List<ActivityItem>>(await ReadResponseAsync(response)) ?? [];
     }
 
@@ -50,7 +50,7 @@ public sealed class ActivitiesService
             JsonSerializer.Serialize(new { category_id = categoryId, name }),
             Encoding.UTF8, "application/json");
         request.Headers.TryAddWithoutValidation("Prefer", "return=minimal");
-        using var response = await Http.SendAsync(request);
+        using var response = await _http.SendAsync(request);
         await ReadResponseAsync(response);
     }
 
@@ -60,17 +60,17 @@ public sealed class ActivitiesService
         using var request = await CreateRequestAsync(HttpMethod.Delete,
             $"activities?id=eq.{id}&select=id");
         request.Headers.TryAddWithoutValidation("Prefer", "return=representation");
-        using var response = await Http.SendAsync(request);
+        using var response = await _http.SendAsync(request);
         string json = await ReadResponseAsync(response);
         var deleted = JsonSerializer.Deserialize<List<ActivityItem>>(json) ?? [];
-        if (deleted.Count == 0)
-            throw new InvalidOperationException("No activity was deleted. Check the Supabase RLS policies.");
+        if (deleted.Count == 0) {
+            throw new InvalidOperationException("No activity was deleted. Check the Supabase RLS policies.");}
     }
 
     private static async Task<string> ReadResponseAsync(HttpResponseMessage response)
     {
         string body = await response.Content.ReadAsStringAsync();
-        if (response.IsSuccessStatusCode) return body;
+        if (response.IsSuccessStatusCode) { return body; }
         string detail = body;
         try
         {

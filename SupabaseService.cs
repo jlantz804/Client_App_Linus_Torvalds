@@ -16,14 +16,13 @@ public sealed class SupabaseService
 
     public async Task InitializeAsync()
     {
-        if (_client is not null)
-            return;
+        if (_client is not null){ return; }
 
         await _initializationLock.WaitAsync();
         try
         {
-            if (_client is not null)
-                return;
+            if (_client is not null){
+                return; }
 
             if (SupabaseSettings.ProjectUrl.Contains("YOUR_PROJECT_REF", StringComparison.Ordinal) ||
                 SupabaseSettings.PublishableKey.Contains("YOUR_SUPABASE_PUBLISHABLE_KEY", StringComparison.Ordinal))
@@ -55,8 +54,9 @@ public sealed class SupabaseService
         try
         {
             var session = _client!.Auth.CurrentSession;
-            if (session is null)
+            if (session is null) {
                 session = await _client.Auth.SignInAnonymously();
+            }
 
             return session?.AccessToken ?? throw new InvalidOperationException(
                 "Could not start an Activities session. Enable Anonymous Sign-Ins in Supabase Authentication settings.");
@@ -80,8 +80,9 @@ public sealed class SupabaseService
                 .Get();
 
             plans.AddRange(response.Models);
-            if (response.Models.Count < pageSize)
+            if (response.Models.Count < pageSize){
                 break;
+            }
         }
 
         return plans;
