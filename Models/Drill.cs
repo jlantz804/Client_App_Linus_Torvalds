@@ -7,7 +7,7 @@ using Supabase.Postgrest.Models;
 namespace Client_App.Model;
 
 [Table("drills")]
-public class Drill : ObservableBaseModel
+public class Drill : ContentPage 
 {
     int _drillId;
     int? _activityId;

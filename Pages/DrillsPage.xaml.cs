@@ -1,4 +1,4 @@
-using Client_App.Model;
+using Client_App.Models;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Client_App;
