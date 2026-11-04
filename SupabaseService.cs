@@ -150,6 +150,65 @@ public sealed class SupabaseService
         using HttpResponseMessage response =
             await _equipmentHttp.SendAsync(request);
     }
+    // DrillsPage Methods - Gavin
+    private async Task<HttpResponseMessage> SendRestAsync(HttpMethod method, string path, object? body = null)
+    { 
+        string token = await GetActivitiesAccessTokenAsync();
+
+        using var request = new HttpRequestMessage(method, SupabaseSettings.ProjectUrl + "/rest/v1/" + path);
+        request.Headers.Add("apikey", SupabaseSettings.PublishableKey);
+        request.Headers.Add("Authorization", "Bearer " + token);
+        if (method != HttpMethod.Get)
+        {
+            request.Headers.Add("Prefer", "return=minimal");
+        }
+        if (body is not null)
+        {
+            request.Content = JsonContent.Create(body);
+        }
+
+
+        var response = await _equipmentHttp.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
+        {
+            string error = await response.Content.ReadAsStringAsync();
+            int status = (int)response.StatusCode;
+            response.Dispose();
+            throw new HttpRequestException($"Supabase error {status}: {error}");
+        }
+        return response;
+    }
+
+    public async Task<List<ActivityItem>> GetAllActivitiesAsync()
+    {
+        using var response = await SendRestAsync(HttpMethod.Get,
+            "activities?select=id,category_id,name&order=name.asc");
+        return await response.Content.ReadFromJsonAsync<List<ActivityItem>>() ?? [];
+    }
+
+
+    public async Task<List<Drill>> GetDrillsAsync()
+    {
+        using var response = await SendRestAsync(HttpMethod.Get, "drills?select=*&order=drillid.asc");
+        var drills = await response.Content.ReadFromJsonAsync<List<Drill>>() ?? [];
+
+
+        var activities = (await GetAllActivitiesAsync()).ToDictionary(a => a.Id);
+        foreach (var drill in drills)
+        {
+            if (drill.ActivityId is long id && activities.TryGetValue(id, out var activity))
+            {
+                drill.ActivityName = activity.Name;
+                drill.CategoryId = activity.CategoryId;
+            }
+            else
+            {
+                drill.ActivityName = "No activity";
+            }
+        }
+        return drills;
+    }
+
 }
 
 [Table("lesson_plans")]

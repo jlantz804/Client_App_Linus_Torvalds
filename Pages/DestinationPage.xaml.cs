@@ -85,7 +85,13 @@ public partial class DestinationPage : ContentPage
 
     // For EquipmentModifications ALEX
     private async void OnEquipmentClicked(object? sender, EventArgs e)
-{
-    await Shell.Current.GoToAsync(nameof(EquipmentModificationsPage));
-}
+    {
+        await Shell.Current.GoToAsync(nameof(EquipmentModificationsPage));
+    }
+
+    // For DrillsPage - Gavin
+    private async void OnDrillsClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync(nameof(DrillsPage));
+    }
 }

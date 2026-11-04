@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace Client_App.Models;
@@ -84,28 +85,6 @@ public sealed class Drill
         VideoUrl = video;
         Steps = steps;
     }
-}
-
-/* int _drillId;
-    int? _activityId;
-    string _activityName = "";
-    string _name = "";
-    string _description = "";
-    string? _imageUrl;
-    string? _videoUrl;
-    List<string> _steps = new (); */
-/* public Drill(int activityId, string activityName, string name, string description, string image, string video, List<string> steps)
-    {
-        ActivityId = activityId;
-        ActivityName = activityName;
-        Name = name;
-        Description = description;
-        ImageUrl = image;
-        VideoUrl = video;
-        Steps = steps;
-    }
-
-    public Drill() { }
 }
 
 public class StepItem : INotifyPropertyChanged
