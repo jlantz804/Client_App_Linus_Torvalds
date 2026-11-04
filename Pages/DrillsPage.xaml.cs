@@ -32,27 +32,29 @@ public partial class DrillsPage : ContentPage
     }
 
     async Task LoadAsync()
-    {
-        if (_busy) return;
-        _busy = true;
-        try
-        {
-            _categories.Clear();
-            _categories.AddRange(await _activitiesService.GetCategoriesAsync(SchoolLevel));
-            CategoryPicker.ItemsSource = _categories.Select(c => c.Name).ToList();
+   {
+       if (_busy) return;
+       _busy = true;
+       try
+       {
+           _categories.Clear();
+           _categories.AddRange(await _activitiesService.GetCategoriesAsync(SchoolLevel));
+           CategoryPicker.ItemsSource = _categories.Select(c => c.Name).ToList();
 
-            Drills.Clear();
-            foreach (var drill in await _supabase.GetDrillsAsync())
-            {
-                Drills.Add(drill);
-            }
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlertAsync("Could not load drills", ex.Message, "OK");
-        }
-        finally { _busy = false; }
-    }
+
+           Drills.Clear();
+           foreach (var drill in await _supabase.GetDrillsAsync())
+           {
+               Drills.Add(drill);
+           }
+       }
+       catch (Exception ex)
+       {
+           await DisplayAlertAsync("Could not load drills", ex.Message, "OK");
+       }
+       finally { _busy = false; }
+   }
+
 
     // Category picks filter the activity picker
     async void CategoryPicker_SelectedIndexChanged(object? sender, EventArgs e)
@@ -119,119 +121,22 @@ public partial class DrillsPage : ContentPage
 
     async void AddDrill_Clicked(object? sender, EventArgs e)
     {
-        if (_busy) return;
-
-        if (ActivityPicker.SelectedItem is not ActivityItem activity)
-        {
-            await DisplayAlertAsync("Missing activity", "Please choose a category and an activity.", "OK");
-            return;
-        }
-        if (string.IsNullOrWhiteSpace(NameENT.Text))
-        {
-            await DisplayAlertAsync("Missing name", "Please enter a drill name.", "OK");
-            return;
-        }
-
-        _busy = true;
-        try
-        {
-            var drill = new Drill
-            {
-                ActivityId = activity.Id,
-                Name = NameENT.Text.Trim(),
-                Description = DescriptionENT.Text?.Trim() ?? "",
-                ImageUrl = NullIfBlank(ImageENT.Text),
-                VideoUrl = NullIfBlank(VideoENT.Text),
-                Steps = GetStepTexts()
-            };
-            await _supabase.AddDrillAsync(drill);
-            Clear();
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlertAsync("Unable to add drill", ex.Message, "OK");
-            return;
-        }
-        finally { _busy = false; }
-
-        await LoadAsync();
+        throw new NotImplementedException();
     }
 
     async void EditDrill_Clicked(object? sender, EventArgs e)
     {
-        if (_busy) return;
-
-        if (DrillsCV.SelectedItem is not Drill selected)
-        {
-            await DisplayAlertAsync("No drill selected", "Tap a drill in the list first.", "OK");
-            return;
-        }
-
-        _busy = true;
-        try
-        {
-            var updated = new Drill
-            {
-                DrillId = selected.DrillId,
-                // Keep the existing activity unless a new one was picked
-                ActivityId = (ActivityPicker.SelectedItem as ActivityItem)?.Id ?? selected.ActivityId,
-                Name = NameENT.Text?.Trim() ?? "",
-                Description = DescriptionENT.Text?.Trim() ?? "",
-                ImageUrl = NullIfBlank(ImageENT.Text),
-                VideoUrl = NullIfBlank(VideoENT.Text),
-                Steps = GetStepTexts()
-            };
-            await _supabase.UpdateDrillAsync(updated);
-            Clear();
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlertAsync("Unable to edit drill", ex.Message, "OK");
-            return;
-        }
-        finally { _busy = false; }
-
-        await LoadAsync();
+        throw new NotImplementedException();
     }
 
     async void DeleteDrill_Clicked(object? sender, EventArgs e)
     {
-        if (_busy || (sender as BindableObject)?.BindingContext is not Drill drill) return;
-
-        bool confirm = await DisplayAlertAsync("Delete Drill", $"Delete '{drill.Name}'?", "Delete", "Cancel");
-        if (!confirm) return;
-
-        _busy = true;
-        try
-        {
-            await _supabase.DeleteDrillAsync(drill.DrillId);
-            Drills.Remove(drill);
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlertAsync("Unable to delete drill", ex.Message, "OK");
-        }
-        finally { _busy = false; }
+        throw new NotImplementedException();
     }
 
     async void DeleteAllDrills_Clicked(object? sender, EventArgs e)
     {
-        if (_busy) return;
-
-        bool confirm = await DisplayAlertAsync("Delete All", "Delete every drill? This can't be undone.", "Delete All", "Cancel");
-        if (!confirm) return;
-
-        _busy = true;
-        try
-        {
-            await _supabase.DeleteAllDrillsAsync();
-            Drills.Clear();
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlertAsync("Unable to delete drills", ex.Message, "OK");
-        }
-        finally { _busy = false; }
+        throw new NotImplementedException();
     }
 
     void ClearFields(object? sender, EventArgs e) => Clear();
