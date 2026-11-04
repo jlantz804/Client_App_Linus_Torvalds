@@ -156,6 +156,96 @@ public sealed class SupabaseService
         using HttpResponseMessage response =
             await _equipmentHttp.SendAsync(request);
     }
+
+    // Methods for DrillsPage - GAVIN
+    // 
+    private async Task<HttpResponseMessage> SendRestAsync(HttpMethod method, string path, object? body = null)
+    {
+        string token = await GetActivitiesAccessTokenAsync();
+
+        using var request = new HttpRequestMessage(method, SupabaseSettings.ProjectUrl + "/rest/v1/" + path);
+        request.Headers.Add("apikey", SupabaseSettings.PublishableKey);
+        request.Headers.Add("Authorization", "Bearer " + token);
+        if (method != HttpMethod.Get)
+        {
+            request.Headers.Add("Prefer", "return=minimal");
+        }
+        if (body is not null)
+        {
+            request.Content = JsonContent.Create(body);
+        }
+
+        var response = await _equipmentHttp.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
+        {
+            string error = await response.Content.ReadAsStringAsync();
+            int status = (int)response.StatusCode;
+            response.Dispose();
+            throw new HttpRequestException($"Supabase error {status}: {error}");
+        }
+        return response;
+    }
+
+    // Needs category_id too, so drills can show their category
+    public async Task<List<ActivityItem>> GetAllActivitiesAsync()
+    {
+        using var response = await SendRestAsync(HttpMethod.Get,
+            "activities?select=id,category_id,name&order=name.asc");
+        return await response.Content.ReadFromJsonAsync<List<ActivityItem>>() ?? [];
+    }
+
+    public async Task<List<Drill>> GetDrillsAsync()
+    {
+        using var response = await SendRestAsync(HttpMethod.Get, "drills?select=*&order=drillid.asc");
+        var drills = await response.Content.ReadFromJsonAsync<List<Drill>>() ?? [];
+
+        var activities = (await GetAllActivitiesAsync()).ToDictionary(a => a.Id);
+        foreach (var drill in drills)
+        {
+            if (drill.ActivityId is long id && activities.TryGetValue(id, out var activity))
+            {
+                drill.ActivityName = activity.Name;
+                drill.CategoryId = activity.CategoryId;
+            }
+            else
+            {
+                drill.ActivityName = "No activity";
+            }
+        }
+        return drills;
+    }
+
+    public async Task AddDrillAsync(Drill drill)
+    {
+        // DrillId is 0, so JsonIgnore(WhenWritingDefault) leaves it out and Postgres generates it
+        using var response = await SendRestAsync(HttpMethod.Post, "drills", drill);
+    }
+
+    public async Task UpdateDrillAsync(Drill drill)
+    {
+        // Anonymous object so drillid is never in the body (an ALWAYS identity column rejects it)
+        var body = new
+        {
+            activity_id = drill.ActivityId,
+            name = drill.Name,
+            description = drill.Description,
+            image_url = drill.ImageUrl,
+            video_url = drill.VideoUrl,
+            steps = drill.Steps
+        };
+        using var response = await SendRestAsync(HttpMethod.Patch, $"drills?drillid=eq.{drill.DrillId}", body);
+    }
+
+    public async Task DeleteDrillAsync(long drillId)
+    {
+        using var response = await SendRestAsync(HttpMethod.Delete, $"drills?drillid=eq.{drillId}");
+    }
+
+    public async Task DeleteAllDrillsAsync()
+    {
+        // PostgREST refuses a DELETE with no filter, so match every real id
+        using var response = await SendRestAsync(HttpMethod.Delete, "drills?drillid=gt.0");
+    }
 }
 
 [Table("lesson_plans")]

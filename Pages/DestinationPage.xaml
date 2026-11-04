@@ -35,7 +35,7 @@
                                 CornerRadius="18"
                                 HeightRequest="82"/>
                         <Button Text="Drills"
-                                IsEnabled="False"
+                                Clicked="OnDrillsClicked"
                                 BackgroundColor="#BFE8D0"
                                 TextColor="#171717"
                                 FontSize="19"
