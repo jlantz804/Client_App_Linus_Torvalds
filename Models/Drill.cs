@@ -101,12 +101,4 @@ public class StepItem : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
-}
-/* int _drillId;
-    int? _activityId;
-    string _activityName = "";
-    string _name = "";
-    string _description = "";
-    string? _imageUrl;
-    string? _videoUrl;
-    List<string> _steps = new (); */
+} */

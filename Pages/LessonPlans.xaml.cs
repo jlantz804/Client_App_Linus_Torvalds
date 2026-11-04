@@ -1,58 +1,21 @@
 using System.Collections.ObjectModel;
+using Client_App.Models;
 
 namespace Client_App;
 
 public partial class LessonPlans : ContentPage
 {
-    private static readonly string[] _schoolLevels = ["Elementary", "Middle School", "High School"];
-
-    private static readonly Dictionary<string, string> _elementaryCategories = new(StringComparer.Ordinal)
-    {
-        ["Overhand throwing"] = "Object control skills",
-        ["Underhand tossing"] = "Object control skills",
-        ["Kicking"] = "Object control skills",
-        ["Striking"] = "Object control skills",
-        ["Catching"] = "Object control skills",
-        ["Run"] = "Locomotor movements",
-        ["Walk"] = "Locomotor movements",
-        ["Gallop"] = "Locomotor movements",
-        ["Hop"] = "Locomotor movements",
-        ["Leap"] = "Locomotor movements",
-        ["Side side"] = "Locomotor movements",
-        ["Skip"] = "Locomotor movements",
-        ["Jump"] = "Locomotor movements"
-    };
-
-    private static readonly string[] _middleHighActivities =
-    [
-        "Soccer",
-        "Football",
-        "Basketball",
-        "Gymnastics",
-        "Swimming",
-        "Baseball/softball",
-        "Volleyball",
-        "Badminton",
-        "Pickleball",
-        "Team activities",
-        "Tchoukball",
-        "Weightlifting",
-        "Yoga"
-    ];
-
-    private readonly List<LessonPlan> _allPlans = [];
-    private readonly SupabaseService _supabase;
+    private readonly Lessons _lessons;
     private LessonPlan? _editingPlan;
-    private string _connectionStatus = "Connecting to Supabase…";
 
     public ObservableCollection<LessonPlan> VisiblePlans { get; } = [];
 
     public LessonPlans(SupabaseService supabase)
     {
-        _supabase = supabase;
+        _lessons = new Lessons(supabase);
         InitializeComponent();
         BindingContext = this;
-        SchoolLevelPicker.ItemsSource = _schoolLevels;
+        SchoolLevelPicker.ItemsSource = _lessons.SchoolLevels.ToArray();
         RefreshPlans();
     }
 
@@ -96,10 +59,10 @@ public partial class LessonPlans : ContentPage
         EditorHeading.Text = "Edit lesson plan";
         TitleEntry.Text = plan.Title;
         SchoolLevelPicker.SelectedItem = plan.SchoolLevel;
-        PopulateActivities();
+        ActivityPicker.ItemsSource = _lessons.GetActivities(plan.SchoolLevel);
         ActivityPicker.SelectedItem = plan.Activity;
         CategoryEntry.Text = plan.Category;
-        CategoryEntry.IsReadOnly = plan.SchoolLevel == "Elementary";
+        CategoryEntry.IsReadOnly = _lessons.IsCategoryReadOnly(plan.SchoolLevel);
         GradeEntry.Text = plan.GradeLevel;
         ScheduledDatePicker.Date = plan.ScheduledDate;
         DurationEntry.Text = plan.DurationMinutes.ToString();
@@ -120,9 +83,10 @@ public partial class LessonPlans : ContentPage
         {
             return;
         }
+
         try
         {
-            await _supabase.DeleteLessonPlanAsync(plan);
+            await _lessons.DeletePlanAsync(plan);
             await LoadPlansAsync();
         }
         catch (Exception exception)
@@ -133,52 +97,23 @@ public partial class LessonPlans : ContentPage
 
     private async void OnSaveClicked(object? sender, EventArgs e)
     {
-        var title = TitleEntry.Text?.Trim() ?? string.Empty;
-        var schoolLevel = SchoolLevelPicker.SelectedItem as string ?? string.Empty;
-        var category = CategoryEntry.Text?.Trim() ?? string.Empty;
-        var activity = ActivityPicker.SelectedItem as string ?? string.Empty;
-        var grade = GradeEntry.Text?.Trim() ?? string.Empty;
-        var objectives = ObjectivesEditor.Text?.Trim() ?? string.Empty;
-
-        if (string.IsNullOrWhiteSpace(title) ||
-            string.IsNullOrWhiteSpace(schoolLevel) ||
-            string.IsNullOrWhiteSpace(category) ||
-            string.IsNullOrWhiteSpace(activity) ||
-            string.IsNullOrWhiteSpace(grade) ||
-            string.IsNullOrWhiteSpace(objectives))
-        {
-            ShowValidation("Complete the title, school level, category, activity, grade, and objectives.");
-            return;
-        }
-
-        if (!int.TryParse(DurationEntry.Text, out var duration) || duration <= 0)
-        {
-            ShowValidation("Enter a duration greater than zero minutes.");
-            return;
-        }
-
-        var plan = new LessonPlan
-        {
-            Title = title,
-            SchoolLevel = schoolLevel,
-            Category = category,
-            Activity = activity,
-            GradeLevel = grade,
-            ScheduledDate = ScheduledDatePicker.Date ?? DateTime.Today,
-            DurationMinutes = duration,
-            Objectives = objectives
-        };
-
         try
         {
-            if (_editingPlan is null)
+            var validationMessage = await _lessons.SavePlanAsync(
+                _editingPlan,
+                TitleEntry.Text,
+                SchoolLevelPicker.SelectedItem as string,
+                CategoryEntry.Text,
+                ActivityPicker.SelectedItem as string,
+                GradeEntry.Text,
+                ScheduledDatePicker.Date,
+                DurationEntry.Text,
+                ObjectivesEditor.Text);
+
+            if (validationMessage is not null)
             {
-                await _supabase.AddLessonPlanAsync(plan);
-            }
-            else
-            {
-                plan.Id = _editingPlan.Id;
-                await _supabase.UpdateLessonPlanAsync(plan);
+                ShowValidation(validationMessage);
+                return;
             }
 
             EditorOverlay.IsVisible = false;
@@ -197,18 +132,17 @@ public partial class LessonPlans : ContentPage
 
     private void OnSchoolLevelChanged(object? sender, EventArgs e)
     {
-        PopulateActivities();
+        var schoolLevel = SchoolLevelPicker.SelectedItem as string;
+        ActivityPicker.ItemsSource = _lessons.GetActivities(schoolLevel);
         CategoryEntry.Text = string.Empty;
-        CategoryEntry.IsReadOnly = SchoolLevelPicker.SelectedItem as string == "Elementary";
+        CategoryEntry.IsReadOnly = _lessons.IsCategoryReadOnly(schoolLevel);
     }
 
     private void OnActivityChanged(object? sender, EventArgs e)
     {
-        if (SchoolLevelPicker.SelectedItem as string == "Elementary" &&
-            ActivityPicker.SelectedItem is string activity &&
-            _elementaryCategories.TryGetValue(activity, out var category))
+        if (_lessons.IsCategoryReadOnly(SchoolLevelPicker.SelectedItem as string))
         {
-            CategoryEntry.Text = category;
+            CategoryEntry.Text = _lessons.GetCategory(ActivityPicker.SelectedItem as string) ?? string.Empty;
         }
     }
 
@@ -219,45 +153,13 @@ public partial class LessonPlans : ContentPage
 
     private async Task LoadPlansAsync()
     {
-        try
-        {
-            var plans = await _supabase.GetLessonPlansAsync();
-            _allPlans.Clear();
-            _allPlans.AddRange(plans);
-            _connectionStatus = $"{_allPlans.Count} lesson plans available";
-        }
-        catch (Exception exception)
-        {
-            _allPlans.Clear();
-            _connectionStatus = $"Supabase: {exception.Message}";
-        }
-
+        await _lessons.LoadPlansAsync();
         RefreshPlans();
-    }
-
-    private void PopulateActivities()
-    {
-        var level = SchoolLevelPicker.SelectedItem as string;
-        ActivityPicker.ItemsSource = level switch
-        {
-            "Elementary" => _elementaryCategories.Keys.ToArray(),
-            "Middle School" or "High School" => _middleHighActivities,
-            _ => Array.Empty<string>()
-        };
     }
 
     private void RefreshPlans(string? searchText = null)
     {
-        var query = (searchText ?? SearchEntry.Text)?.Trim();
-        var plans = string.IsNullOrEmpty(query)
-            ? _allPlans
-            : _allPlans.Where(plan =>
-                plan.Title.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                plan.SchoolLevel.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                plan.Category.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                plan.Activity.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                plan.GradeLevel.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                plan.Objectives.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+        var plans = _lessons.SearchPlans(searchText ?? SearchEntry.Text);
 
         VisiblePlans.Clear();
         foreach (var plan in plans)
@@ -265,7 +167,7 @@ public partial class LessonPlans : ContentPage
             VisiblePlans.Add(plan);
         }
 
-        PlanCountLabel.Text = _connectionStatus;
+        PlanCountLabel.Text = _lessons.ConnectionStatus;
     }
 
     private void ShowValidation(string message)
