@@ -31,12 +31,6 @@ public sealed class SupabaseService
                 return;
             }
 
-            if (SupabaseSettings.ProjectUrl.Contains("YOUR_PROJECT_REF", StringComparison.Ordinal) ||
-                SupabaseSettings.PublishableKey.Contains("YOUR_SUPABASE_PUBLISHABLE_KEY", StringComparison.Ordinal))
-            {
-                throw new InvalidOperationException("Add your Supabase project URL and publishable key in SupabaseSettings.cs.");
-            }
-
             var client = new Supabase.Client(
                 SupabaseSettings.ProjectUrl,
                 SupabaseSettings.PublishableKey);
