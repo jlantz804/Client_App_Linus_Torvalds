@@ -14,4 +14,11 @@ public interface IDatabase
     Task AddLessonPlanAsync(LessonPlan plan);
     Task UpdateLessonPlanAsync(LessonPlan plan);
     Task DeleteLessonPlanAsync(LessonPlan plan);
+
+    // Activities: the contract for the Supabase activity queries.
+    Task<IReadOnlyList<ActivityCategory>> GetActivityCategoriesAsync(string schoolLevel);
+    Task<IReadOnlyList<ActivityItem>> GetActivitiesByCategoryAsync(long categoryId);
+    Task<ActivityError> InsertActivityAsync(long categoryId, string name);
+    Task<ActivityError> DeleteActivityByIdAsync(long activityId);
+
 }
