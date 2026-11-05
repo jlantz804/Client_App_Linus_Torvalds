@@ -82,6 +82,7 @@ public class Lessons
         }
         catch (Exception exception)
         {
+            // Keep the page usable and surface fetch failures through the connection-status label.
             _allPlans.Clear();
             ConnectionStatus = $"Supabase: {exception.Message}";
         }
@@ -127,6 +128,7 @@ public class Lessons
         grade = grade?.Trim() ?? string.Empty;
         objectives = objectives?.Trim() ?? string.Empty;
 
+        // Return a validation message for the form; null means the input is ready to save.
         if (string.IsNullOrWhiteSpace(title) ||
             string.IsNullOrWhiteSpace(schoolLevel) ||
             string.IsNullOrWhiteSpace(category) ||
@@ -160,6 +162,7 @@ public class Lessons
         }
         else
         {
+            // Preserve the existing primary key so Supabase updates the intended row.
             plan.Id = editingPlan.Id;
             await _database.UpdateLessonPlanAsync(plan);
         }

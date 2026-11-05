@@ -17,6 +17,7 @@ public partial class Database : IDatabase
 
     private async Task InitializeClientAsync()
     {
+        // Use an anonymous session when needed so Supabase row-level security can authorize requests.
         await _client.InitializeAsync();
 
         if (_client.Auth.CurrentSession is null)
@@ -81,6 +82,7 @@ public partial class Database : IDatabase
     public async Task<IReadOnlyList<LessonPlan>> GetLessonPlansAsync()
     {
         await InitializeClientAsync();
+        // Fetch in bounded batches to stay within Supabase/PostgREST response limits.
         const int pageSize = 1000;
         var plans = new List<LessonPlan>();
 
