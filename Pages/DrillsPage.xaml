@@ -1,100 +1,174 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:model="clr-namespace:Client_App.Model"
+             xmlns:model="clr-namespace:Client_App.Models"
              x:DataType="model:BusinessLogic"
              x:Class="Client_App.DrillsPage"
              Title="DrillsPage">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Logout" IconImageSource="logout.png" />
+        <ToolbarItem Text="Logout"
+                IconImageSource="logout.png"/>
     </ContentPage.ToolbarItems>
+    <ScrollView>
+        <Grid RowDefinitions="Auto,Auto,*,Auto,Auto"
+                Padding="10,0"
+                RowSpacing="5">
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Padding="10,0" RowSpacing="5">
+            <!--Header-->
+            <Grid Grid.Row="0"
+                    ColumnDefinitions="2*,3*,*,*,5*,5*"
+                    ColumnSpacing="10">
+                <Label Text="Activity"
+                        Grid.Column="0"
+                        FontAttributes="Bold"/>
+                <Label Text="Drill Name"
+                        Grid.Column="1"
+                        FontAttributes="Bold"/>
+                <Label Text="Image"
+                        Grid.Column="2"
+                        FontAttributes="Bold"/>
+                <Label Text="Video"
+                        Grid.Column="3"
+                        FontAttributes="Bold"/>
+                <Label Text="Description"
+                        Grid.Column="4"
+                        FontAttributes="Bold"/>
+                <Label Text="Steps"
+                        Grid.Column="5"
+                        FontAttributes="Bold"/>
+            </Grid>
+            <BoxView Grid.Row="1"
+                    HeightRequest="1"
+                    BackgroundColor="LightGray"/>
 
-        <!--Header-->
-        <Grid Grid.Row="0" ColumnDefinitions="2*,3*,*,*,5*,5*" ColumnSpacing="10">
-            <Label Text="Activity"    Grid.Column="0" FontAttributes="Bold" />
-            <Label Text="Drill Name"  Grid.Column="1" FontAttributes="Bold" />
-            <Label Text="Image"       Grid.Column="2" FontAttributes="Bold" />
-            <Label Text="Video"       Grid.Column="3" FontAttributes="Bold" />
-            <Label Text="Description" Grid.Column="4" FontAttributes="Bold" />
-            <Label Text="Steps"       Grid.Column="5" FontAttributes="Bold" />
-        </Grid>
-        <BoxView Grid.Row="1" HeightRequest="1" BackgroundColor="LightGray" />
-
-        <!--Binded Drill Rows-->
-        <CollectionView Grid.Row="2" x:Name="DrillsCV" ItemsSource="{Binding Drills}"
-            SelectionMode="Single">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="model:Drill">
-                    <Grid RowDefinitions="*,Auto">
-                        <Grid ColumnDefinitions="2*,3*,*,*,5*,5*,Auto"
-                          ColumnSpacing="10" Padding="0,8">
-                            <!--Activity-->
-                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding ActivityName}" 
-                                LineBreakMode="WordWrap"/>
-                            <!--Name-->
-                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding Name}" 
-                                LineBreakMode="WordWrap"/>
-                            <!--Contains Image-->
-                            <Label Grid.Row="0" Grid.Column="2" Text="{Binding ImageMark}" />
-                            <!--Contains Video-->
-                            <Label Grid.Row="0" Grid.Column="3" Text="{Binding VideoMark}" />
-                            <!--Description-->
-                            <Label Grid.Row="0" Grid.Column="4" Text="{Binding Description}"
-                                LineBreakMode="WordWrap" />
-                            <!--Steps-->
-                            <Label Grid.Row="0" Grid.Column="5" Text="{Binding StepsText}"
-                                LineBreakMode="WordWrap" />
-                            <!--Delete Button-->
-                            <ImageButton Grid.Row="0" Grid.Column="6" Clicked="DeleteDrill_Clicked"
-                                Source="trash.png" VerticalOptions="Center" Padding="8"/>
-                        </Grid>
-                        <BoxView Grid.Row="1" HeightRequest="1" BackgroundColor="LightGray" />
-                    </Grid>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        <!--Drill Entries-->
-        <Grid Grid.Row="3" ColumnDefinitions="2*,3*,*,*,5*,5*,Auto" ColumnSpacing="4">
-            <!--Binded to the Activities in the Activity Table-->
-            <Picker x:Name="ActivityPicker" Title="Activity" ItemsSource="{Binding Activities}"
-                    ItemDisplayBinding="{Binding Name, x:DataType=model:Activity}" 
-                    MaximumHeightRequest="35" VerticalOptions="Start" />
-            <Entry Grid.Column="1" Placeholder="Drill Name" x:Name="NameENT"
-                MaximumHeightRequest="35" VerticalOptions="Start" />
-            <Entry Grid.Column="2" Placeholder="Image" x:Name="ImageENT"
-                MaximumHeightRequest="35" VerticalOptions="Start" />
-            <Entry Grid.Column="3" Placeholder="Video" x:Name="VideoENT"
-                MaximumHeightRequest="35" VerticalOptions="Start" />
-            <Editor Grid.Column="4" Placeholder="Description" x:Name="DescriptionENT"/>
-
-            <!--Steps list: that is able to expand and collapse to add more or less steps-->
-            <VerticalStackLayout Grid.Column="5" Spacing="6" x:Name="StepsLayout"
-                    BindableLayout.ItemsSource="{Binding Steps}"
-                    MinimumHeightRequest="35" >
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate x:DataType="model:StepItem">
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="4">
-                            <Editor Text="{Binding Text}" Placeholder="Describe this step"
-                                    AutoSize="TextChanges" />
-                            <Button Grid.Column="1" Text="✕" Clicked="OnRemoveStep"/>
+            <!--Binded Drill Rows-->
+            <CollectionView Grid.Row="2"
+                    x:Name="DrillsCV"
+                    ItemsSource="{Binding Drills}"
+                            SelectionMode="Single">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:Drill">
+                        <Grid RowDefinitions="*,Auto">
+                            <Grid ColumnDefinitions="2*,3*,*,*,5*,5*,Auto"
+                                  ColumnSpacing="10"
+                                    Padding="0,8">
+                                <!--Activity-->
+                                <Label Grid.Row="0"
+                                        Grid.Column="0"
+                                        Text="{Binding ActivityName}"
+                                       LineBreakMode="WordWrap"/>
+                                <!--Name-->
+                                <Label Grid.Row="0"
+                                        Grid.Column="1"
+                                        Text="{Binding Name}"
+                                       LineBreakMode="WordWrap"/>
+                                <!--Contains Image-->
+                                <Label Grid.Row="0"
+                                        Grid.Column="2"
+                                        Text="{Binding ImageMark}"/>
+                                <!--Contains Video-->
+                                <Label Grid.Row="0"
+                                        Grid.Column="3"
+                                        Text="{Binding VideoMark}"/>
+                                <!--Description-->
+                                <Label Grid.Row="0"
+                                        Grid.Column="4"
+                                        Text="{Binding Description}"
+                                       LineBreakMode="WordWrap"/>
+                                <!--Steps-->
+                                <Label Grid.Row="0"
+                                        Grid.Column="5"
+                                        Text="{Binding StepsText}"
+                                       LineBreakMode="WordWrap"/>
+                                <!--Delete Button-->
+                                <ImageButton Grid.Row="0"
+                                        Grid.Column="6"
+                                        Clicked="DeleteDrill_Clicked"
+                                             Source="trash.png"
+                                        VerticalOptions="Center"
+                                        Padding="8"/>
+                            </Grid>
+                            <BoxView Grid.Row="1"
+                                    HeightRequest="1"
+                                    BackgroundColor="LightGray"/>
                         </Grid>
                     </DataTemplate>
-                </BindableLayout.ItemTemplate>
-            </VerticalStackLayout>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <!--Drill Entries-->
+            <VerticalStackLayout Grid.Row="3">
+                <!--Binded to the Activities in the Activity Table-->
+                <Picker x:Name="ActivityPicker"
+                        Title="Activity"
+                        ItemsSource="{Binding Activities}"
+                        ItemDisplayBinding="{Binding Name, x:DataType=model:ActivityItem}"
+                        MaximumHeightRequest="35"
+                        VerticalOptions="Start"/>
+                <Entry Grid.Column="1"
+                        Placeholder="Drill Name"
+                        x:Name="NameENT"
+                       MaximumHeightRequest="35"
+                        VerticalOptions="Start"/>
+                <Entry Grid.Column="2"
+                        Placeholder="Image"
+                        x:Name="ImageENT"
+                       MaximumHeightRequest="35"
+                        VerticalOptions="Start"/>
+                <Entry Grid.Column="3"
+                        Placeholder="Video"
+                        x:Name="VideoENT"
+                       MaximumHeightRequest="35"
+                        VerticalOptions="Start"/>
+                <Editor Grid.Column="4"
+                        Placeholder="Description"
+                        x:Name="DescriptionENT"/>
 
-            <Button Grid.Column="6" Text="+" HorizontalOptions="Start"
-                    VerticalOptions="Start" Clicked="OnAddStep"
-                    FontSize="18"/>
+                <!--Steps list: that is able to expand and collapse to add more or less steps-->
+                <VerticalStackLayout Grid.Column="5"
+                        Spacing="6"
+                        x:Name="StepsLayout"
+                                     BindableLayout.ItemsSource="{Binding Steps}"
+                                     MinimumHeightRequest="35">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="model:StepItem">
+                            <Grid ColumnDefinitions="*,Auto"
+                                    ColumnSpacing="4">
+                                <Editor Text="{Binding Text}"
+                                        Placeholder="Describe this step"
+                                        AutoSize="TextChanges"/>
+                                <Button Grid.Column="1"
+                                        Text="✕"
+                                        Clicked="OnRemoveStep"/>
+                            </Grid>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Button Grid.Column="6"
+                        Text="+"
+                        HorizontalOptions="Start"
+                        VerticalOptions="Start"
+                        Clicked="OnAddStep"
+                        FontSize="18"/>
+            </VerticalStackLayout>
+            <!--CRUD Buttons-->
+            <Grid Grid.Row="4"
+                    ColumnDefinitions="*,*,*,*"
+                    ColumnSpacing="10">
+                <Button Grid.Column="0"
+                        Text="Clear"
+                        Clicked="ClearFields"/>
+                <Button Grid.Column="1"
+                        Text="Add Drill"
+                        Clicked="AddDrill_Clicked"/>
+                <Button Grid.Column="2"
+                        Text="Edit Drill"
+                        Clicked="EditDrill_Clicked"/>
+                <Button Grid.Column="3"
+                        Text="Delete All"
+                        Clicked="DeleteAllDrills_Clicked"/>
+            </Grid>
         </Grid>
-        <!--CRUD Buttons-->
-        <Grid Grid.Row="4" ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
-            <Button Grid.Column="0" Text="Clear" Clicked="ClearFields" />
-            <Button Grid.Column="1" Text="Add Drill" Clicked="AddDrill_Clicked" />
-            <Button Grid.Column="2" Text="Edit Drill" Clicked="EditDrill_Clicked" />
-            <Button Grid.Column="3" Text="Delete All" Clicked="DeleteAllDrills_Clicked" />
-        </Grid>
-    </Grid>
+    </ScrollView>
 </ContentPage>

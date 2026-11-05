@@ -1,9 +1,11 @@
-
+using Supabase.Postgrest.Attributes;
+using Supabase.Postgrest.Models;
 using System.Text.Json.Serialization;
 
 namespace Client_App.Models;
 
-public sealed class ActivityItem
+[Table("activities")]
+public sealed class ActivityItem : BaseModel
 {
     [JsonPropertyName("id")]
     public long Id

@@ -28,14 +28,15 @@ public partial class DrillsPage : ContentPage
 
     async void AddDrill_Clicked(object? sender, EventArgs e)
     {
-        if (ActivityPicker.SelectedItem is not Activity activity)
+        if (ActivityPicker.SelectedItem is not ActivityItem activity)
         {
             await DisplayAlertAsync("Missing activity", "Please choose an activity.", "OK");
             return;
         }
 
-        DrillError result = await MauiProgram.BusinessLogic.AddDrill(activity, NameENT.Text, ImageENT.Text, VideoENT.Text, 
-            DescriptionENT.Text, MauiProgram.BusinessLogic.Steps.Select(s => s.Text).Where(t => !string.IsNullOrWhiteSpace(t)).ToList());
+        DrillError result = await MauiProgram.BusinessLogic.AddDrill(
+        activity, NameENT.Text, DescriptionENT.Text, ImageENT.Text, VideoENT.Text,
+        MauiProgram.BusinessLogic.Steps.Select(s => s.Text).Where(t => !string.IsNullOrWhiteSpace(t)).ToList());
         if (result != DrillError.NoError)
         {
             await DisplayAlertAsync("RuhRoh Raggy", result.ToString(), "OK");
