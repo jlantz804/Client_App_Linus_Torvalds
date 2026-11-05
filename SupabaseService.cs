@@ -69,46 +69,6 @@ public sealed class SupabaseService
         }
     }
 
-    public async Task<IReadOnlyList<LessonPlan>> GetLessonPlansAsync()
-    {
-        await InitializeAsync();
-        const int pageSize = 1000;
-        var plans = new List<LessonPlan>();
-
-        for (var offset = 0; ; offset += pageSize)
-        {
-            var response = await _client!.From<LessonPlan>()
-                .Range(offset, offset + pageSize - 1)
-                .Get();
-
-            plans.AddRange(response.Models);
-            if (response.Models.Count < pageSize)
-            {
-                break;
-            }
-        }
-
-        return plans;
-    }
-
-    public async Task AddLessonPlanAsync(LessonPlan plan)
-    {
-        await InitializeAsync();
-        await _client!.From<LessonPlan>().Insert(plan);
-    }
-
-    public async Task UpdateLessonPlanAsync(LessonPlan plan)
-    {
-        await InitializeAsync();
-        await _client!.From<LessonPlan>().Update(plan);
-    }
-
-    public async Task DeleteLessonPlanAsync(LessonPlan plan)
-    {
-        await InitializeAsync();
-        await _client!.From<LessonPlan>().Delete(plan);
-    }
-
     //Methods for EquipmentModifications - ALEX
     public async Task<List<ActivityItem>?> GetEquipmentActivitiesAsync()
     {

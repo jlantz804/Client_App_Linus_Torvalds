@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Client_App;
+
 namespace Client_App.Models;
 
 public partial class Database : IDatabase
@@ -15,16 +17,21 @@ public partial class Database : IDatabase
         client = new Supabase.Client(url,key);
     }
 
+    private async Task InitializeClientAsync()
+    {
+        await client.InitializeAsync();
+
+        if (client.Auth.CurrentSession is null)
+        {
+            await client.Auth.SignInAnonymously();
+        }
+    }
+
     public async Task SelectAllDrills()
     {
         try
         {
-            await client.InitializeAsync();
-
-            if (client.Auth.CurrentSession is null)
-            {
-                await client.Auth.SignInAnonymously();
-            }
+            await InitializeClientAsync();
 
             var activities = (await client.From<ActivityItem>().Get()).Models;
             var drills = (await client.From<Drill>().Get()).Models;
@@ -71,6 +78,46 @@ public partial class Database : IDatabase
             return ex.Message.Contains("already exists") || ex.Message.Contains("duplicate key") ? DrillError.DuplicateDrill : DrillError.DBAdditionError;
         }
         return DrillError.NoError;
+    }
+
+    public async Task<IReadOnlyList<LessonPlan>> GetLessonPlansAsync()
+    {
+        await InitializeClientAsync();
+        const int pageSize = 1000;
+        var plans = new List<LessonPlan>();
+
+        for (var offset = 0; ; offset += pageSize)
+        {
+            var response = await client.From<LessonPlan>()
+                .Range(offset, offset + pageSize - 1)
+                .Get();
+
+            plans.AddRange(response.Models);
+            if (response.Models.Count < pageSize)
+            {
+                break;
+            }
+        }
+
+        return plans;
+    }
+
+    public async Task AddLessonPlanAsync(LessonPlan plan)
+    {
+        await InitializeClientAsync();
+        await client.From<LessonPlan>().Insert(plan);
+    }
+
+    public async Task UpdateLessonPlanAsync(LessonPlan plan)
+    {
+        await InitializeClientAsync();
+        await client.From<LessonPlan>().Update(plan);
+    }
+
+    public async Task DeleteLessonPlanAsync(LessonPlan plan)
+    {
+        await InitializeClientAsync();
+        await client.From<LessonPlan>().Delete(plan);
     }
 
     public Task<DrillError> UpdateDrill(Drill currentDrill, string drillName)
