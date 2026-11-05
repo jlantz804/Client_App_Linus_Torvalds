@@ -209,6 +209,42 @@ public sealed class SupabaseService
         return drills;
     }
 
+
+    // Gavin: Drills create, update, and delete operations.
+    public async Task AddDrillAsync(Drill drill)
+    {
+        // The database generates drillid.
+        using var response = await SendRestAsync(HttpMethod.Post, "drills", new
+        {
+            activity_id = drill.ActivityId,
+            name = drill.Name,
+            description = drill.Description,
+            image_url = drill.ImageUrl,
+            video_url = drill.VideoUrl,
+            steps = drill.Steps
+        });
+    }
+
+    public async Task UpdateDrillAsync(Drill drill)
+    {
+        using var response = await SendRestAsync(HttpMethod.Patch,
+            $"drills?drillid=eq.{drill.DrillId}", new
+            {
+                activity_id = drill.ActivityId,
+                name = drill.Name,
+                description = drill.Description,
+                image_url = drill.ImageUrl,
+                video_url = drill.VideoUrl,
+                steps = drill.Steps
+            });
+    }
+
+    public async Task DeleteDrillAsync(long drillId)
+    {
+        using var response = await SendRestAsync(HttpMethod.Delete,
+            $"drills?drillid=eq.{drillId}");
+    }
+
 }
 
 [Table("lesson_plans")]
