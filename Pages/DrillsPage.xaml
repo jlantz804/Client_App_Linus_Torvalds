@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:model="clr-namespace:Client_App.Model"
-             x:DataType="model:BusinessLogic"
+             xmlns:model="clr-namespace:Client_App.Models"
+             xmlns:local="clr-namespace:Client_App"
+             x:DataType="local:DrillsPage"
              x:Class="Client_App.DrillsPage"
              Title="DrillsPage">
 
@@ -32,10 +33,10 @@
                         <Grid ColumnDefinitions="2*,3*,*,*,5*,5*,Auto"
                           ColumnSpacing="10" Padding="0,8">
                             <!--Activity-->
-                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding ActivityName}" 
+                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding ActivityName}"
                                 LineBreakMode="WordWrap"/>
                             <!--Name-->
-                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding Name}" 
+                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding Name}"
                                 LineBreakMode="WordWrap"/>
                             <!--Contains Image-->
                             <Label Grid.Row="0" Grid.Column="2" Text="{Binding ImageMark}" />
@@ -60,7 +61,7 @@
         <Grid Grid.Row="3" ColumnDefinitions="2*,3*,*,*,5*,5*,Auto" ColumnSpacing="4">
             <!--Binded to the Activities in the Activity Table-->
             <Picker x:Name="ActivityPicker" Title="Activity" ItemsSource="{Binding Activities}"
-                    ItemDisplayBinding="{Binding Name, x:DataType=model:Activity}" 
+                    ItemDisplayBinding="{Binding Name, x:DataType=model:ActivityItem}"
                     MaximumHeightRequest="35" VerticalOptions="Start" />
             <Entry Grid.Column="1" Placeholder="Drill Name" x:Name="NameENT"
                 MaximumHeightRequest="35" VerticalOptions="Start" />

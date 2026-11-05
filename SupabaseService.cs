@@ -187,6 +187,11 @@ public sealed class SupabaseService
     }
 
 
+    public async Task AddDrillAsync(Drill drill)
+    {
+        using var response = await SendRestAsync(HttpMethod.Post, "drills", drill);
+    }
+
     public async Task<List<Drill>> GetDrillsAsync()
     {
         using var response = await SendRestAsync(HttpMethod.Get, "drills?select=*&order=drillid.asc");

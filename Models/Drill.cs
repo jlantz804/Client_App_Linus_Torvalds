@@ -101,4 +101,4 @@ public class StepItem : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
-} */
+}

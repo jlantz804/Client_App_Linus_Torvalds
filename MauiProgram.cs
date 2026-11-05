@@ -21,6 +21,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ActivitiesService>();
 		builder.Services.AddTransient<ActivitiesPage>();
 		builder.Services.AddTransient<EquipmentModificationsPage>();
+		builder.Services.AddTransient<DrillsPage>();
 
 
 #if DEBUG
