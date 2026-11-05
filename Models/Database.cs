@@ -1,29 +1,28 @@
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Client_App;
 
 namespace Client_App.Models;
 
 public partial class Database : IDatabase
 {
-    private static string url = "https://dsczwqvcbapcnparudmg.supabase.co";
-    private static string key = "sb_publishable_pyIuG5PYJ7M-wle-Al6pWg_Zk2UzhNn";
-    Supabase.Client client;
+    private static readonly string _url = "https://dsczwqvcbapcnparudmg.supabase.co";
+    private static readonly string _key = "sb_publishable_pyIuG5PYJ7M-wle-Al6pWg_Zk2UzhNn";
+    private readonly Supabase.Client _client;
     public ObservableCollection<Drill> Drills { get; private set; } = new();
     public ObservableCollection<ActivityItem> Activities { get; private set; } = new();
 
     public Database()
     {
-        client = new Supabase.Client(url,key);
+        _client = new Supabase.Client(_url,_key);
     }
 
     private async Task InitializeClientAsync()
     {
-        await client.InitializeAsync();
+        await _client.InitializeAsync();
 
-        if (client.Auth.CurrentSession is null)
+        if (_client.Auth.CurrentSession is null)
         {
-            await client.Auth.SignInAnonymously();
+            await _client.Auth.SignInAnonymously();
         }
     }
 
@@ -33,8 +32,8 @@ public partial class Database : IDatabase
         {
             await InitializeClientAsync();
 
-            var activities = (await client.From<ActivityItem>().Get()).Models;
-            var drills = (await client.From<Drill>().Get()).Models;
+            var activities = (await _client.From<ActivityItem>().Get()).Models;
+            var drills = (await _client.From<Drill>().Get()).Models;
 
             var names = activities.ToDictionary(a => a.Id, a => a.Name);
 
@@ -60,7 +59,7 @@ public partial class Database : IDatabase
     {
         try
         {
-            var response = await client.From<Drill>().Insert(drillToInsert);
+            var response = await _client.From<Drill>().Insert(drillToInsert);
             if (response.Models.Any())
             {
                 var addedDrill = response.Models.First();
@@ -88,7 +87,7 @@ public partial class Database : IDatabase
 
         for (var offset = 0; ; offset += pageSize)
         {
-            var response = await client.From<LessonPlan>()
+            var response = await _client.From<LessonPlan>()
                 .Range(offset, offset + pageSize - 1)
                 .Get();
 
@@ -105,19 +104,19 @@ public partial class Database : IDatabase
     public async Task AddLessonPlanAsync(LessonPlan plan)
     {
         await InitializeClientAsync();
-        await client.From<LessonPlan>().Insert(plan);
+        await _client.From<LessonPlan>().Insert(plan);
     }
 
     public async Task UpdateLessonPlanAsync(LessonPlan plan)
     {
         await InitializeClientAsync();
-        await client.From<LessonPlan>().Update(plan);
+        await _client.From<LessonPlan>().Update(plan);
     }
 
     public async Task DeleteLessonPlanAsync(LessonPlan plan)
     {
         await InitializeClientAsync();
-        await client.From<LessonPlan>().Delete(plan);
+        await _client.From<LessonPlan>().Delete(plan);
     }
 
     public Task<DrillError> UpdateDrill(Drill currentDrill, string drillName)

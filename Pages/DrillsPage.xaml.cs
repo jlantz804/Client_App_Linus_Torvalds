@@ -19,7 +19,9 @@ public partial class DrillsPage : ContentPage
     void OnRemoveStep(object? sender, EventArgs e)
     {
         if (sender is Button { BindingContext: StepItem step })
+        {
             MauiProgram.BusinessLogic.Steps.Remove(step);
+        }
         if (MauiProgram.BusinessLogic.Steps.IsNullOrEmpty())
         {
             MauiProgram.BusinessLogic.Steps.Add(new StepItem());
