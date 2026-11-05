@@ -21,8 +21,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<SupabaseService>();
         builder.Services.AddSingleton<IDatabase, Database>();
 
-		// Rishi: Register Activities for Supabase
-		builder.Services.AddSingleton<ActivitiesService>();
+        // Rishi: Activities now use BusinessLogic -> IDatabase -> Database.
+        builder.Services.AddSingleton<BusinessLogic>(MauiProgram.BusinessLogic);
 		builder.Services.AddTransient<ActivitiesPage>();
 		builder.Services.AddTransient<EquipmentModificationsPage>();
 		builder.Services.AddTransient<DrillsPage>();

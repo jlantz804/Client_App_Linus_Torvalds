@@ -47,4 +47,58 @@ public class BusinessLogic
     {
         return DrillError.NoError;
     }
+
+    // Rishi: Activities logic 
+    public Task<IReadOnlyList<ActivityCategory>> GetActivityCategoriesAsync(string schoolLevel)
+    {
+        if (schoolLevel != "elementary" && schoolLevel != "middle" && schoolLevel != "high")
+        {
+            return Task.FromResult<IReadOnlyList<ActivityCategory>>([]);
+        }
+
+        return Database.GetActivityCategoriesAsync(schoolLevel);
+    }
+
+    public Task<IReadOnlyList<ActivityItem>> GetActivitiesByCategoryAsync(long categoryId)
+    {
+        if (categoryId <= 0)
+        {
+            return Task.FromResult<IReadOnlyList<ActivityItem>>([]);
+        }
+
+        return Database.GetActivitiesByCategoryAsync(categoryId);
+    }
+
+    public async Task<ActivityError> AddActivityAsync(long categoryId, string? name)
+    {
+        if (categoryId <= 0)
+        {
+            return ActivityError.InvalidCategory;
+        }
+
+        if (string.IsNullOrWhiteSpace(name) || name.Trim().Length > 100)
+        {
+            return ActivityError.InvalidActivityName;
+        }
+
+        string cleanName = name.Trim();
+        var activities = await Database.GetActivitiesByCategoryAsync(categoryId);
+        if (activities.Any(a => string.Equals(a.Name, cleanName, StringComparison.OrdinalIgnoreCase)))
+        {
+            return ActivityError.DuplicateActivity;
+        }
+
+        return await Database.InsertActivityAsync(categoryId, cleanName);
+    }
+
+    public Task<ActivityError> RemoveActivityAsync(long activityId)
+    {
+        if (activityId <= 0)
+        {
+            return Task.FromResult(ActivityError.InvalidActivityId);
+        }
+
+        return Database.DeleteActivityByIdAsync(activityId);
+    }
+
 }
