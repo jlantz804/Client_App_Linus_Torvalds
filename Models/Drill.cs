@@ -1,11 +1,15 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
+using Supabase.Postgrest.Attributes;
+using Supabase.Postgrest.Models;
 
 namespace Client_App.Models;
 
-public sealed class Drill
+[Table("drills")]
+public sealed class Drill : BaseModel
 {
     // Omitted from the JSON when 0, so the database generates it on insert
+    [PrimaryKey("drillid", false)]
     [JsonPropertyName("drillid")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public long DrillId

@@ -38,15 +38,15 @@ public class Lessons
         "Yoga"
     ];
 
-    private readonly SupabaseService _supabase;
+    private readonly IDatabase _database;
     private readonly List<LessonPlan> _allPlans = [];
 
     public IReadOnlyList<string> SchoolLevels => _schoolLevels;
     public string ConnectionStatus { get; private set; } = "Connecting to Supabase…";
 
-    public Lessons(SupabaseService supabase)
+    public Lessons(IDatabase database)
     {
-        _supabase = supabase;
+        _database = database;
     }
 
     public string[] GetActivities(string? schoolLevel)
@@ -75,13 +75,14 @@ public class Lessons
     {
         try
         {
-            var plans = await _supabase.GetLessonPlansAsync();
+            var plans = await _database.GetLessonPlansAsync();
             _allPlans.Clear();
             _allPlans.AddRange(plans);
             ConnectionStatus = $"{_allPlans.Count} lesson plans available";
         }
         catch (Exception exception)
         {
+            // Keep the page usable and surface fetch failures through the connection-status label.
             _allPlans.Clear();
             ConnectionStatus = $"Supabase: {exception.Message}";
         }
@@ -106,7 +107,7 @@ public class Lessons
 
     public async Task DeletePlanAsync(LessonPlan plan)
     {
-        await _supabase.DeleteLessonPlanAsync(plan);
+        await _database.DeleteLessonPlanAsync(plan);
     }
 
     public async Task<string?> SavePlanAsync(
@@ -127,6 +128,7 @@ public class Lessons
         grade = grade?.Trim() ?? string.Empty;
         objectives = objectives?.Trim() ?? string.Empty;
 
+        // Return a validation message for the form; null means the input is ready to save.
         if (string.IsNullOrWhiteSpace(title) ||
             string.IsNullOrWhiteSpace(schoolLevel) ||
             string.IsNullOrWhiteSpace(category) ||
@@ -156,12 +158,13 @@ public class Lessons
 
         if (editingPlan is null)
         {
-            await _supabase.AddLessonPlanAsync(plan);
+            await _database.AddLessonPlanAsync(plan);
         }
         else
         {
+            // Preserve the existing primary key so Supabase updates the intended row.
             plan.Id = editingPlan.Id;
-            await _supabase.UpdateLessonPlanAsync(plan);
+            await _database.UpdateLessonPlanAsync(plan);
         }
 
         return null;

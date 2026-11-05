@@ -4,7 +4,6 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:AdaptedPE"
-    xmlns:local="clr-namespace:Client_App"
     Title="Client_App">
 
     <ShellContent
@@ -16,8 +15,4 @@
         Title="Teacher Sign In"
         ContentTemplate="{DataTemplate pages:TeacherSignInPage}"
         Route="TeacherSignInPage" />
-    <ShellContent
-        Title="Equipment Modifications"
-        ContentTemplate="{DataTemplate local:EquipmentModificationsPage}"
-        Route="EquipmentModificationsPage" />
 </Shell>

@@ -10,9 +10,9 @@ public partial class LessonPlans : ContentPage
 
     public ObservableCollection<LessonPlan> VisiblePlans { get; } = [];
 
-    public LessonPlans(SupabaseService supabase)
+    public LessonPlans(IDatabase database)
     {
-        _lessons = new Lessons(supabase);
+        _lessons = new Lessons(database);
         InitializeComponent();
         BindingContext = this;
         SchoolLevelPicker.ItemsSource = _lessons.SchoolLevels.ToArray();

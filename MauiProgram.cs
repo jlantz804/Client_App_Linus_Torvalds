@@ -1,9 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 
 namespace Client_App;
+using Client_App.Models;
 
 public static class MauiProgram
 {
+
+    public static BusinessLogic BusinessLogic { get; } = new();
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
@@ -16,11 +19,13 @@ public static class MauiProgram
             });
 
         builder.Services.AddSingleton<SupabaseService>();
+        builder.Services.AddSingleton<IDatabase, Database>();
 
 		// Rishi: Register Activities for Supabase
 		builder.Services.AddSingleton<ActivitiesService>();
 		builder.Services.AddTransient<ActivitiesPage>();
 		builder.Services.AddTransient<EquipmentModificationsPage>();
+		builder.Services.AddTransient<DrillsPage>();
 
 
 #if DEBUG
