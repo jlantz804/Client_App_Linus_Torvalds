@@ -271,4 +271,18 @@ public partial class ActivitiesPage : ContentPage
             StatusLabel.Text = status;
         }
     }
+    private async void OnBackToHomeClicked(object? sender, EventArgs e)
+    {
+        try
+        {
+            await Shell.Current.GoToAsync("..");
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync(
+                "Navigation Error",
+                ex.Message,
+                "OK");
+        }
+    }
 }
