@@ -10,7 +10,7 @@ Show activities from Supabase. Add and remove activities by school level.
 [QueryProperty(nameof(SchoolLevel), "schoolLevel")]
 public partial class ActivitiesPage : ContentPage
 {
-    private readonly ActivitiesService _activities;
+    private readonly BusinessLogic _activities;
     private readonly List<ActivityCategory> _categories = [];
     private ActivityCategory? _selectedCategory;
     private string _schoolCode = string.Empty;
@@ -34,7 +34,7 @@ public partial class ActivitiesPage : ContentPage
         }
     }
 
-    public ActivitiesPage(ActivitiesService activities)
+    public ActivitiesPage(BusinessLogic activities)
     {
         _activities = activities;
         InitializeComponent();
@@ -62,7 +62,7 @@ public partial class ActivitiesPage : ContentPage
         try
         {
             _categories.Clear();
-            _categories.AddRange(await _activities.GetCategoriesAsync(_schoolCode));
+            _categories.AddRange(await _activities.GetActivityCategoriesAsync(_schoolCode));
             _loaded = true;
             if (_schoolCode == "elementary")
             {
@@ -136,7 +136,7 @@ public partial class ActivitiesPage : ContentPage
             return;
         }
 
-        var items = await _activities.GetActivitiesAsync(_selectedCategory.Id);
+        var items = await _activities.GetActivitiesByCategoryAsync(_selectedCategory.Id);
         ActivityList.Children.Clear();
         foreach (var item in items)
         {
@@ -221,17 +221,24 @@ public partial class ActivitiesPage : ContentPage
         var name = await DisplayPromptAsync("Add Activity",
             $"New activity in {_selectedCategory.Name}:",
             "Add", "Cancel", placeholder: "Activity name", maxLength: 100);
-        name = name?.Trim();
-        if (string.IsNullOrWhiteSpace(name))
+        if (name is null) // Cancel was clicked.
         {
             return;
         }
+        name = name.Trim();
 
         SetBusy(true, "Adding activity...");
         try
         {
-            await _activities.AddActivityAsync(_selectedCategory.Id, name);
-            await ReadActivitiesAsync();
+            ActivityError result = await _activities.AddActivityAsync(_selectedCategory.Id, name);
+            if (result == ActivityError.NoError)
+            {
+                await ReadActivitiesAsync();
+            }
+            else
+            {
+                await DisplayAlertAsync("Unable to add activity", result.ToUserMessage(), "OK");
+            }
         }
         catch (Exception ex) { await DisplayAlertAsync("Unable to add activity", ex.Message, "OK"); }
         finally { SetBusy(false); }
@@ -254,8 +261,15 @@ public partial class ActivitiesPage : ContentPage
         SetBusy(true, "Removing activity...");
         try
         {
-            await _activities.DeleteActivityAsync(item.Id);
-            await ReadActivitiesAsync();
+            ActivityError result = await _activities.RemoveActivityAsync(item.Id);
+            if (result == ActivityError.NoError)
+            {
+                await ReadActivitiesAsync();
+            }
+            else
+            {
+                await DisplayAlertAsync("Unable to remove activity", result.ToUserMessage(), "OK");
+            }
         }
         catch (Exception ex) { await DisplayAlertAsync("Unable to remove activity", ex.Message, "OK"); }
         finally { SetBusy(false); }
@@ -269,6 +283,20 @@ public partial class ActivitiesPage : ContentPage
         if (status is not null)
         {
             StatusLabel.Text = status;
+        }
+    }
+    private async void OnBackToHomeClicked(object? sender, EventArgs e)
+    {
+        try
+        {
+            await Shell.Current.GoToAsync("..");
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync(
+                "Navigation Error",
+                ex.Message,
+                "OK");
         }
     }
 }

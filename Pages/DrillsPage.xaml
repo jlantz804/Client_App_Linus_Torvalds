@@ -6,10 +6,6 @@
              x:Class="Client_App.DrillsPage"
              Title="DrillsPage">
 
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Logout"
-                IconImageSource="logout.png"/>
-    </ContentPage.ToolbarItems>
     <ScrollView>
         <Grid RowDefinitions="Auto,Auto,*,Auto,Auto"
                 Padding="10,0"
@@ -85,7 +81,7 @@
                                 <ImageButton Grid.Row="0"
                                         Grid.Column="6"
                                         Clicked="DeleteDrill_Clicked"
-                                             Source="trash.png"
+                                             Source="icons8_trash_60.png"
                                         VerticalOptions="Center"
                                         Padding="8"/>
                             </Grid>
