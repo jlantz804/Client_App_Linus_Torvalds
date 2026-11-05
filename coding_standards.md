@@ -14,6 +14,13 @@ We agree to use the same rules across the codebase. Each member owns four standa
 3. **Use PascalCase for XAML page and control names, and give named controls meaningful names.** For example, `LoginPage` and `UsernameEntry`. Keep `x:Name` values descriptive and consistent with the related page.
 4. **Use parameterized database queries.** Never build SQL by concatenating user input into a query. Keep table and column names consistent with the existing Supabase schema, and handle database errors rather than silently ignoring them.
 
+## Joey Lantz (JL) — four standards
+
+1. **Use Allman brace style.** Put opening braces on a new line for namespaces, types, methods, properties, and control blocks. (`.editorconfig`)
+2. **Always use braces for control blocks.** `if`, `else`, loops, and similar statements must use braces, even when their body is one line. (`.editorconfig`)
+3. **Do not write single-line blocks or statements.** Keep block contents on separate lines so changes are easier to read and review. (`.editorconfig`)
+4. **Keep methods focused.** A method should perform one clear task. Split long or multi-purpose methods into smaller methods with descriptive names when doing so improves readability or reuse.
+
 ## Enforcement and exceptions
 
 Place `.editorconfig` next to `Client_App.csproj`. Check formatting with:
