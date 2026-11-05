@@ -16,8 +16,8 @@
         Title="Teacher Sign In"
         ContentTemplate="{DataTemplate pages:TeacherSignInPage}"
         Route="TeacherSignInPage" />
-    <ShellContent
+   <!--! <ShellContent
         Title="Equipment Modifications"
         ContentTemplate="{DataTemplate local:EquipmentModificationsPage}"
-        Route="EquipmentModificationsPage" />
+        Route="EquipmentModificationsPage" /> -->
 </Shell>

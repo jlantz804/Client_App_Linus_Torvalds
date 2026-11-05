@@ -13,6 +13,7 @@
             <Picker
                 x:Name="ActivityPicker"
                 Title="Choose an activity"
+                ItemsSource="{Binding Activities}"
                 ItemDisplayBinding="{Binding Name}" />
             <Label Text="Name"/>
             <Entry x:Name="NameEntry"

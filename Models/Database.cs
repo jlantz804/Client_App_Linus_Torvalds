@@ -82,4 +82,24 @@ public partial class Database : IDatabase
     {
         throw new NotImplementedException();
     }
+
+    //Alex Method for EquipmentModification
+    public async Task<EquipmentModificationError> InsertEquipmentModification(EquipmentModification modification)
+    {
+        try
+        {
+            await client.From<EquipmentModification>().Insert(modification);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Insert failed: {ex}");
+            if (ex.Message.Contains("already exists") || ex.Message.Contains("duplicate key"))
+            {
+                return EquipmentModificationError.DuplicateEquipmentModiifcation;
+            }
+
+            return EquipmentModificationError.DBAdditionError;
+        }
+        return EquipmentModificationError.NoError;
+    }
 }
