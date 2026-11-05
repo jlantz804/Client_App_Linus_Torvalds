@@ -1,25 +1,26 @@
-using System.Text.Json.Serialization;
+using Supabase.Postgrest.Attributes;
+using Supabase.Postgrest.Models;
 
 namespace Client_App.Models;
 
-public sealed class EquipmentModification
+[Table("equipment_modifications")]
+public sealed class EquipmentModification : BaseModel
 {
-    [JsonPropertyName("id")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [PrimaryKey("id", false)]
     public long Id { get; set; }
 
-    [JsonPropertyName("activity_id")]
+    [Column("activity_id")]
     public long ActivityId { get; set; }
 
-    [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
+    [Column("name")]
+    public string Name { get; set; } = "";
 
-    [JsonPropertyName("image")]
-    public string Image { get; set; } = string.Empty;
+    [Column("image")]
+    public string Image { get; set; } = "";
 
-    [JsonPropertyName("description")]
-    public string Description { get; set; } = string.Empty;
+    [Column("description")]
+    public string Description { get; set; } = "";
 
-    [JsonPropertyName("steps")]
-    public string Steps { get; set; } = string.Empty;
+    [Column("steps")]
+    public string Steps { get; set; } = "";
 }

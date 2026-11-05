@@ -1,9 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 
 namespace Client_App;
+using Client_App.Models;
 
 public static class MauiProgram
 {
+
+    public static BusinessLogic BusinessLogic { get; } = new();
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
