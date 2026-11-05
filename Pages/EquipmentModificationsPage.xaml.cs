@@ -22,5 +22,14 @@ public partial class EquipmentModificationsPage : ContentPage
         activity, NameEntry.Text ?? "", DescriptionEntry.Text ?? "",
         ImageEntry.Text ?? "", ModificationStepsEntry.Text ?? "");
     }
+
+    private void OnClearClicked(object? sender, EventArgs e)
+    {
+        ActivityPicker.SelectedIndex = -1;
+        NameEntry.Text = "";
+        ImageEntry.Text = "";
+        DescriptionEntry.Text = "";
+        ModificationStepsEntry.Text = "";
+    }
     
 }

@@ -33,8 +33,14 @@
                 Text="Save"
                 Clicked="OnSaveClicked"
                 BackgroundColor="#FF158DDD"
-                TextColor="Black"/>
-
+                TextColor="White"/>
+            <Button 
+                x:Name="ClearButton"
+                Text="Clear All Entries" 
+                Clicked="OnClearClicked"
+                BackgroundColor="#FF158DDD"
+                TextColor="White"
+                />
         </VerticalStackLayout>
 
     </ScrollView>
