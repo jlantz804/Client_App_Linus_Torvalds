@@ -48,7 +48,21 @@ public class BusinessLogic
         return DrillError.NoError;
     }
 
-    // Rishi: Activities logic 
+    //Equipment modification methods
+    public async Task<EquipmentModificationError> AddEquipmentModification(ActivityItem activity,
+    string name, string description, string image, string steps)
+    {
+        EquipmentModification modification = new EquipmentModification();
+
+        modification.ActivityId = activity.Id;
+        modification.Name = name;
+        modification.Description = description;
+        modification.Image = image;
+        modification.Steps = steps;
+
+        return await Database.InsertEquipmentModification(modification);
+    }
+    // Rishi: Activities logic
     public Task<IReadOnlyList<ActivityCategory>> GetActivityCategoriesAsync(string schoolLevel)
     {
         if (schoolLevel != "elementary" && schoolLevel != "middle" && schoolLevel != "high")

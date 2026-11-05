@@ -10,6 +10,8 @@ public interface IDatabase
     public Task<DrillError> InsertDrill(Drill drillToInsert);
     public Task<DrillError> UpdateDrill(Drill currentDrill, String drillName);
     public Task<DrillError> DeleteDrill(Drill drillToDelete);
+    public Task<EquipmentModificationError> InsertEquipmentModification(EquipmentModification modification);
+    
     Task<IReadOnlyList<LessonPlan>> GetLessonPlansAsync();
     Task AddLessonPlanAsync(LessonPlan plan);
     Task UpdateLessonPlanAsync(LessonPlan plan);
