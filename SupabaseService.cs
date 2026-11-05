@@ -57,6 +57,7 @@ public sealed class SupabaseService
             {
                 session = await _client.Auth.SignInAnonymously();
             }
+            }
 
             return session?.AccessToken ?? throw new InvalidOperationException(
                 "Could not start an Activities session. Enable Anonymous Sign-Ins in Supabase Authentication settings.");
