@@ -13,7 +13,7 @@
 
             <!--Header-->
             <Grid Grid.Row="0"
-                    ColumnDefinitions="2*,3*,*,*,5*,5*"
+                    ColumnDefinitions="2*,3*,5*,5*"
                     ColumnSpacing="10">
                 <Label Text="Activity"
                         Grid.Column="0"
@@ -21,17 +21,17 @@
                 <Label Text="Drill Name"
                         Grid.Column="1"
                         FontAttributes="Bold"/>
-                <Label Text="Image"
+                <!--<Label Text="Image"
                         Grid.Column="2"
                         FontAttributes="Bold"/>
                 <Label Text="Video"
                         Grid.Column="3"
-                        FontAttributes="Bold"/>
+                        FontAttributes="Bold"/>-->
                 <Label Text="Description"
-                        Grid.Column="4"
+                        Grid.Column="2"
                         FontAttributes="Bold"/>
                 <Label Text="Steps"
-                        Grid.Column="5"
+                        Grid.Column="3"
                         FontAttributes="Bold"/>
             </Grid>
             <BoxView Grid.Row="1"
@@ -46,40 +46,50 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="model:Drill">
                         <Grid RowDefinitions="*,Auto">
-                            <Grid ColumnDefinitions="2*,3*,*,*,5*,5*,Auto"
+                            <Grid ColumnDefinitions="2*,3*,5*,5*,Auto"
                                   ColumnSpacing="10"
                                     Padding="0,8">
-                                <!--Activity-->
-                                <Label Grid.Row="0"
-                                        Grid.Column="0"
-                                        Text="{Binding ActivityName}"
-                                       LineBreakMode="WordWrap"/>
-                                <!--Name-->
-                                <Label Grid.Row="0"
-                                        Grid.Column="1"
-                                        Text="{Binding Name}"
-                                       LineBreakMode="WordWrap"/>
-                                <!--Contains Image-->
-                                <Label Grid.Row="0"
-                                        Grid.Column="2"
-                                        Text="{Binding ImageMark}"/>
-                                <!--Contains Video-->
-                                <Label Grid.Row="0"
-                                        Grid.Column="3"
-                                        Text="{Binding VideoMark}"/>
+
+                                <!--Activity and Image Column-->
+                                <VerticalStackLayout 
+                                        Grid.Row="0"
+                                        Grid.Column="0">
+                                        <!--Activity-->
+                                        <Label Text="{Binding ActivityName}"
+                                        LineBreakMode="WordWrap"/>
+
+                                        <!--Contains Image-->
+                                        <Label Text=" " />
+                                        <Label Text="Image?" />
+                                        <Label Text="{Binding ImageMark}"/>
+                                </VerticalStackLayout>
+
+                                <!--Drill Name and Video Columm-->
+                                <VerticalStackLayout
+                                        Grid.Row="0"
+                                        Grid.Column="1" >
+                                        <!--Name-->
+                                        <Label Text="{Binding Name}"
+                                                LineBreakMode="WordWrap"/>
+
+                                        <!--Contains Video-->
+                                        <Label Text=" " />
+                                        <Label Text="Video?" />
+                                        <Label Text="{Binding VideoMark}"/>
+                                </VerticalStackLayout>
                                 <!--Description-->
                                 <Label Grid.Row="0"
-                                        Grid.Column="4"
+                                        Grid.Column="2"
                                         Text="{Binding Description}"
                                        LineBreakMode="WordWrap"/>
                                 <!--Steps-->
                                 <Label Grid.Row="0"
-                                        Grid.Column="5"
+                                        Grid.Column="3"
                                         Text="{Binding StepsText}"
                                        LineBreakMode="WordWrap"/>
                                 <!--Delete Button-->
                                 <ImageButton Grid.Row="0"
-                                        Grid.Column="6"
+                                        Grid.Column="4"
                                         Clicked="DeleteDrill_Clicked"
                                              Source="icons8_trash_60.png"
                                         VerticalOptions="Center"
