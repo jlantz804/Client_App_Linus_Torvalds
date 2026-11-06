@@ -14,6 +14,13 @@ We agree to use the same rules across the codebase. Each member owns four standa
 3. **Use PascalCase for XAML page and control names, and give named controls meaningful names.** For example, `LoginPage` and `UsernameEntry`. Keep `x:Name` values descriptive and consistent with the related page.
 4. **Use parameterized database queries.** Never build SQL by concatenating user input into a query. Keep table and column names consistent with the existing Supabase schema, and handle database errors rather than silently ignoring them.
 
+## Gavin Anderson (GA) — four standards
+
+1. **Use PascalCase for types.** Classes, structs, enums, and delegates must begin each word with a capital letter (for example, `DatabaseService`). (`.editorconfig`)
+2. **Use PascalCase for methods.** Method names must describe the action or result (for example, `LoadUserProfile`). (`.editorconfig`)
+3. **Choose descriptive names.** Avoid unclear abbreviations and generic names such as `data`, `thing`, or `temp` when a more specific name is available.
+4. **Use one primary type per C# file.** Name the file after that type (for example, `AuthenticationService.cs` contains `AuthenticationService`). Small related helper or private nested types may remain with the primary type when that improves readability.
+
 ## Joey Lantz (JL) — four standards
 
 1. **Use Allman brace style.** Put opening braces on a new line for namespaces, types, methods, properties, and control blocks. (`.editorconfig`)
