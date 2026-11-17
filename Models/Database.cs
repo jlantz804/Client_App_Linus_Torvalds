@@ -45,6 +45,7 @@ public partial class Database : IDatabase
         }
     }
 
+    // Database Drills functions - Gavin
     public async Task SelectAllDrills()
     {
         try
@@ -98,6 +99,74 @@ public partial class Database : IDatabase
         return DrillError.NoError;
     }
 
+    public async Task<DrillError> UpdateDrill(Drill drillToEdit, long activityId, string activityName,
+        string drillName, string description, string? image, string? video, List<string> steps, bool locked)
+    {
+        try
+        {
+            var updated = new Drill
+            {
+                DrillId = drillToEdit.DrillId,
+                ActivityId = activityId,
+                Name = drillName.Trim(),
+                Description = description.Trim(),
+                ImageUrl = string.IsNullOrWhiteSpace(image) ? null : image.Trim(),
+                VideoUrl = string.IsNullOrWhiteSpace(video) ? null : video.Trim(),
+                Steps = steps,
+                Locked = locked
+            };
+
+            var response = await _client.From<Drill>().Update(updated);
+            if (response.Models.Any())
+            {
+                var updatedDrill = response.Models.First();
+                updatedDrill.ActivityName = activityName;
+                updatedDrill.SchoolLevel = drillToEdit.SchoolLevel;
+                updatedDrill.CreatedBy = drillToEdit.CreatedBy;
+
+                var index = Drills.IndexOf(drillToEdit);
+                if (index >= 0)
+                {
+                    Drills[index] = updatedDrill;
+                }
+            }
+            else
+            {
+                return DrillError.DrillNotFound;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Update failed: {ex}");
+            return ex.Message.Contains("already exists") || ex.Message.Contains("duplicate key")
+                ? DrillError.DuplicateDrill
+                : DrillError.DBEditError;
+        }
+        return DrillError.NoError;
+    }
+
+    public async Task<DrillError> DeleteDrill(Drill drillToDelete)
+    {
+        try
+        {
+            var response = await _client.From<Drill>().Delete(drillToDelete);
+            if (response.Models.Any())
+            {
+                Drills.Remove(drillToDelete);
+            }
+            else
+            {
+                return DrillError.DrillNotFound;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Delete failed: {0}", ex);
+            return DrillError.DBDeleteError;
+        }
+        return DrillError.NoError;
+    }
+
     public async Task<IReadOnlyList<LessonPlan>> GetLessonPlansAsync()
     {
         await InitializeClientAsync();
@@ -137,16 +206,6 @@ public partial class Database : IDatabase
     {
         await InitializeClientAsync();
         await _client.From<LessonPlan>().Delete(plan);
-    }
-
-    public Task<DrillError> UpdateDrill(Drill currentDrill, string drillName)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<DrillError> DeleteDrill(Drill drillToDelete)
-    {
-        throw new NotImplementedException();
     }
 
     //Alex Method for EquipmentModification

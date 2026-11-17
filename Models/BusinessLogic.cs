@@ -30,12 +30,12 @@ public class BusinessLogic
         await Database.SelectAllDrills();
     }
 
-    public async Task<DrillError> AddDrill(ActivityItem activity, String name, String description,  String image, String video, List<string> steps)
+    public async Task<DrillError> AddDrill(ActivityItem activity, String name, String description,  String image, String video, List<string> steps, Boolean locked, String user)
     {
         DrillError fieldsValid = FieldsValid(name, description, image, video, steps);
         if (fieldsValid == DrillError.NoError)
         {
-            return await Database.InsertDrill(new Drill(activity.Id ,activity.Name, name,description,image,video,steps));
+            return await Database.InsertDrill(new Drill(activity.Id ,activity.Name, name, description, image, video, steps, locked, user));
         }
         else
         {
@@ -43,8 +43,59 @@ public class BusinessLogic
         }
     }
 
+    public async Task<DrillError> EditDrill(Drill drillToEdit, ActivityItem activity, String name, String description,  String image, String video, List<string> steps, Boolean locked, String currentUser)
+    {
+        // Change once login is working
+        if (drillToEdit.Locked && currentUser != drillToEdit.CreatedBy || drillToEdit.Locked != locked && currentUser != drillToEdit.CreatedBy)
+        {
+            return DrillError.PermissionDenied;
+        }
+        DrillError fieldsValid = FieldsValid(name, description, image, video, steps);
+        if (fieldsValid == DrillError.NoError)
+        {
+            return await Database.UpdateDrill(drillToEdit, activity.Id, activity.Name, 
+                name, description, image, video, steps, locked);
+        }
+        else
+        {
+            return fieldsValid;
+        }
+    }
+
+    public async Task<DrillError> DeleteDrill(Drill drillToDelete, String currentUser)
+    {
+        // Change once login is working
+        if (drillToDelete.Locked && currentUser != drillToDelete.CreatedBy)
+        {
+            return DrillError.PermissionDenied;
+        }
+        return await Database.DeleteDrill(drillToDelete);
+    }
+
     private DrillError FieldsValid(string name, string description, string image, string video, List<string> steps)
     {
+        if (name.Length == 0)
+        {
+            return DrillError.NameTooShort;
+        }
+        else if (description.Length == 0)
+        {
+            return DrillError.DescriptionTooShort;
+        }
+        else if (steps.Count == 0)
+        {
+            return DrillError.StepsEmpty;
+        }
+        else
+        {
+            foreach(string step in steps)
+            {
+                if (step == "")
+                {
+                    return DrillError.BlankStep;
+                }
+            }
+        }
         return DrillError.NoError;
     }
 

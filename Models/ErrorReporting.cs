@@ -3,7 +3,15 @@ public enum DrillError
 {
     NoError,
     DuplicateDrill,
-    DBAdditionError
+    DrillNotFound,
+    NameTooShort,
+    DescriptionTooShort,
+    StepsEmpty,
+    BlankStep,
+    PermissionDenied,
+    DBAdditionError,
+    DBEditError,
+    DBDeleteError
 }
 public enum EquipmentModificationError
 {

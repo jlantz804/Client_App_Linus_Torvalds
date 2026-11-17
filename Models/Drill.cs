@@ -64,6 +64,12 @@ public sealed class Drill : BaseModel
     [JsonPropertyName("steps")]
     public List<string> Steps { get; set; } = [];
 
+    [JsonPropertyName("created_by")]
+    public string CreatedBy { get; set; } = string.Empty;
+
+    [JsonPropertyName("locked")]
+    public Boolean Locked { get; set; } = false;
+
     // Display helpers, aren't sent to the database
     [JsonIgnore]
     public string ImageMark => string.IsNullOrWhiteSpace(ImageUrl) ? "✗" : "✓";
@@ -79,7 +85,7 @@ public sealed class Drill : BaseModel
     }
 
     public Drill(long? activityId, string activityName, string name, string description,
-                 string? image, string? video, List<string> steps)
+                 string? image, string? video, List<string> steps, Boolean locked, string user)
     {
         ActivityId = activityId;
         ActivityName = activityName;
@@ -88,6 +94,8 @@ public sealed class Drill : BaseModel
         ImageUrl = image;
         VideoUrl = video;
         Steps = steps;
+        Locked = locked;
+        CreatedBy = user;
     }
 }
 
