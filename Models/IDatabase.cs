@@ -8,7 +8,7 @@ public interface IDatabase
     ObservableCollection<ActivityItem> Activities { get; }
     public Task SelectAllDrills();
     public Task<DrillError> InsertDrill(Drill drillToInsert);
-    public Task<DrillError> UpdateDrill(Drill currentDrill, String drillName);
+    Task<DrillError> UpdateDrill(Drill drillToEdit, long activityId, string activityName, string drillName, string description, string image, string video, List<string> steps, bool locked);
     public Task<DrillError> DeleteDrill(Drill drillToDelete);
     public Task<EquipmentModificationError> InsertEquipmentModification(EquipmentModification modification);
     
@@ -22,5 +22,4 @@ public interface IDatabase
     Task<IReadOnlyList<ActivityItem>> GetActivitiesByCategoryAsync(long categoryId);
     Task<ActivityError> InsertActivityAsync(long categoryId, string name);
     Task<ActivityError> DeleteActivityByIdAsync(long activityId);
-
 }
