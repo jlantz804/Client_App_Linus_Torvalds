@@ -11,7 +11,9 @@ public interface IDatabase
     Task<DrillError> UpdateDrill(Drill drillToEdit, long activityId, string activityName, string drillName, string description, string image, string video, List<string> steps, bool locked);
     public Task<DrillError> DeleteDrill(Drill drillToDelete);
     public Task<EquipmentModificationError> InsertEquipmentModification(EquipmentModification modification);
-    
+    public Task<ObservableCollection<EquipmentModification>> GetEquipmentModificationsAsync();
+    public Task<EquipmentModificationError> DeleteEquipmentModificationsAsync(EquipmentModification modification);
+    public Task<EquipmentModificationError> UpdateEquipmentModificationAsync(EquipmentModification modification);
     Task<IReadOnlyList<LessonPlan>> GetLessonPlansAsync();
     Task AddLessonPlanAsync(LessonPlan plan);
     Task UpdateLessonPlanAsync(LessonPlan plan);
