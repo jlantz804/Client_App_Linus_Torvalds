@@ -12,11 +12,17 @@ public static class SupabaseSettings
 public sealed class SupabaseService
 {
     private readonly SemaphoreSlim _initializationLock = new(1, 1);
-    private Supabase.Client? _client;
+    private readonly Supabase.Client _client = new(
+        SupabaseSettings.ProjectUrl,
+        SupabaseSettings.PublishableKey);
     private HttpClient _equipmentHttp = new HttpClient();
+    private bool _initialized;
+    public Supabase.Client Client => _client;
+    public string? CurrentUserId => _client.Auth.CurrentSession?.User?.Id;
+
     public async Task InitializeAsync()
     {
-        if (_client is not null)
+        if (_initialized)
         {
             return;
         }
@@ -24,22 +30,49 @@ public sealed class SupabaseService
         await _initializationLock.WaitAsync();
         try
         {
-            if (_client is not null)
+            if (!_initialized)
             {
-                return;
+                await _client.InitializeAsync();
+                _initialized = true;
             }
-
-            var client = new Supabase.Client(
-                SupabaseSettings.ProjectUrl,
-                SupabaseSettings.PublishableKey);
-
-            await client.InitializeAsync();
-            _client = client;
         }
         finally
         {
             _initializationLock.Release();
         }
+    }
+
+    public async Task<bool> SignInAsync(string email, string password)
+    {
+        await InitializeAsync();
+        var session = await Client.Auth.SignInWithPassword(email.Trim(), password);
+        return !string.IsNullOrWhiteSpace(session?.User?.Id);
+    }
+
+    public async Task<bool> CreateAccountAsync(string email, string name, string password)
+    {
+        await InitializeAsync();
+        var options = new Supabase.Gotrue.SignUpOptions
+        {
+            Data = new Dictionary<string, object>
+            {
+                ["name"] = name.Trim()
+            }
+        };
+        var session = await Client.Auth.SignUp(email.Trim(), password, options);
+        return !string.IsNullOrWhiteSpace(session?.User?.Id);
+    }
+
+    public async Task<bool> IsCurrentUserAdminAsync()
+    {
+        var userId = CurrentUserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return false;
+        }
+
+        var response = await Client.From<UserProfile>().Get();
+        return response.Models.Any(profile => profile.Uid == userId && profile.IsAdmin);
     }
 
     private readonly SemaphoreSlim _activitiesAuthLock = new(1, 1);

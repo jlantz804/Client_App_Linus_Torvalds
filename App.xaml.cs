@@ -4,13 +4,16 @@ namespace Client_App;
 
 public partial class App : Application
 {
-    public App()
+    private readonly SupabaseService _supabase;
+
+    public App(SupabaseService supabase)
     {
         InitializeComponent();
+        _supabase = supabase;
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(new AppShell());
+        return new Window(new AppShell(_supabase));
     }
 }

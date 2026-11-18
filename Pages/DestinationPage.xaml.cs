@@ -29,7 +29,8 @@ public partial class DestinationPage : ContentPage
 
     private async void OnLessonPlansClicked(object? sender, EventArgs e)
     {
-        await Shell.Current.GoToAsync(nameof(LessonPlans));
+        await Shell.Current.GoToAsync(
+            $"{nameof(LessonPlans)}?schoolLevel={Uri.EscapeDataString(SchoolLevel)}");
     }
 
 

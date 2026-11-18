@@ -83,10 +83,23 @@
                         <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="12">
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                                 <VerticalStackLayout Spacing="5">
-                                    <Label Text="{Binding Title}"
-                                           FontSize="19"
-                                           FontAttributes="Bold"
-                                           TextColor="#18352B" />
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                        <Label Text="{Binding Title}"
+                                               FontSize="19"
+                                               FontAttributes="Bold"
+                                               TextColor="#18352B" />
+                                        <Image Grid.Column="1"
+                                               Source="unlock.png"
+                                               HeightRequest="24"
+                                               WidthRequest="24"
+                                               HorizontalOptions="End">
+                                            <Image.Triggers>
+                                                <DataTrigger TargetType="Image" Binding="{Binding Locked}" Value="True">
+                                                    <Setter Property="Source" Value="lock.png" />
+                                                </DataTrigger>
+                                            </Image.Triggers>
+                                        </Image>
+                                    </Grid>
                                     <Label Text="{Binding Activity}"
                                            FontSize="13"
                                            FontAttributes="Bold"
@@ -95,6 +108,9 @@
                                            FontSize="12"
                                            TextColor="#718078" />
                                     <Label Text="{Binding Category}"
+                                           FontSize="12"
+                                           TextColor="#718078" />
+                                    <Label Text="{Binding CreatorName, StringFormat='Created by: {0}'}"
                                            FontSize="12"
                                            TextColor="#718078" />
                                 </VerticalStackLayout>
@@ -222,6 +238,14 @@
                                 Placeholder="What will students learn or practice?"
                                 AutoSize="TextChanges"
                                 MinimumHeightRequest="90" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="Lock this lesson plan"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   TextColor="#46574E"
+                                   VerticalOptions="Center" />
+                            <Switch x:Name="LockedSwitch" Grid.Column="1" />
+                        </Grid>
                         <Label x:Name="ValidationLabel"
                                IsVisible="False"
                                FontSize="12"
