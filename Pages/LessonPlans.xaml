@@ -110,7 +110,7 @@
                                     <Label Text="{Binding Category}"
                                            FontSize="12"
                                            TextColor="#718078" />
-                                    <Label Text="{Binding CreatedBy, StringFormat='Created by: {0}'}"
+                                    <Label Text="{Binding CreatorName, StringFormat='Created by: {0}'}"
                                            FontSize="12"
                                            TextColor="#718078" />
                                 </VerticalStackLayout>

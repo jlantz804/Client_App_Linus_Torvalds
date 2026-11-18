@@ -189,6 +189,31 @@ public partial class LessonPlans : ContentPage
     private async Task LoadPlansAsync()
     {
         await _lessons.LoadPlansAsync();
+
+        var plans = _lessons.SearchPlans(null);
+        try
+        {
+            var profiles = (await _supabase.Client.From<UserProfile>().Get()).Models;
+            var namesByUserId = profiles.ToDictionary(
+                profile => profile.Uid,
+                profile => profile.Name,
+                StringComparer.OrdinalIgnoreCase);
+
+            foreach (var plan in plans)
+            {
+                plan.CreatorName = plan.CreatedBy is not null && namesByUserId.TryGetValue(plan.CreatedBy, out var creatorName)
+                    ? creatorName
+                    : "Unknown teacher";
+            }
+        }
+        catch (Exception)
+        {
+            foreach (var plan in plans)
+            {
+                plan.CreatorName = "Unknown teacher";
+            }
+        }
+
         RefreshPlans();
     }
 

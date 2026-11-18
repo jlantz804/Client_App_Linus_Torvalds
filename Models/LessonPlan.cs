@@ -46,6 +46,9 @@ public sealed class LessonPlan : BaseModel
     [Column("created_by")]
     public string? CreatedBy { get; set; }
 
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string CreatorName { get; set; } = "Unknown teacher";
+
     [Column("locked")]
     public bool Locked { get; set; }
 }
