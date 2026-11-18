@@ -12,6 +12,7 @@ public partial class Database : IDatabase
     private static readonly string _url = "https://dsczwqvcbapcnparudmg.supabase.co";
     private static readonly string _key = "sb_publishable_pyIuG5PYJ7M-wle-Al6pWg_Zk2UzhNn";
     private readonly Supabase.Client _client;
+    private readonly SupabaseService? _supabaseService;
     private readonly SemaphoreSlim _initializationLock = new(1, 1);
     private bool _initialized;
     public ObservableCollection<Drill> Drills { get; private set; } = new();
@@ -19,18 +20,30 @@ public partial class Database : IDatabase
 
     public Database()
     {
-        _client = new Supabase.Client(_url,_key);
+        _client = new Supabase.Client(_url, _key);
+    }
+
+    public Database(SupabaseService supabaseService)
+    {
+        _supabaseService = supabaseService;
+        _client = supabaseService.Client;
     }
 
     private async Task InitializeClientAsync()
     {
-        // Rishi: One shared Supabase session for Activities, Drills, and Lesson Plans.
         await _initializationLock.WaitAsync();
         try
         {
             if (!_initialized)
             {
-                await _client.InitializeAsync();
+                if (_supabaseService is not null)
+                {
+                    await _supabaseService.InitializeAsync();
+                }
+                else
+                {
+                    await _client.InitializeAsync();
+                }
                 _initialized = true;
             }
 

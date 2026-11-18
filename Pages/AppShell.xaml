@@ -9,6 +9,7 @@
 
     <FlyoutItem Title="Teacher Sign In">
         <ShellContent
+            x:Name="TeacherSignInShellContent"
             Title="Teacher Sign In"
             ContentTemplate="{DataTemplate pages:TeacherSignInPage}"
             Route="TeacherSignInPage" />

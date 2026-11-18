@@ -6,16 +6,17 @@ namespace Client_App;
 [QueryProperty(nameof(SchoolLevel), "schoolLevel")]
 public partial class LessonPlans : ContentPage
 {
-    private const string CurrentUser = "Developer";
     private readonly Lessons _lessons;
+    private readonly SupabaseService _supabase;
     public string? SchoolLevel { get; set; }
     private LessonPlan? _editingPlan;
 
     public ObservableCollection<LessonPlan> VisiblePlans { get; } = [];
 
-    public LessonPlans(IDatabase database)
+    public LessonPlans(IDatabase database, SupabaseService supabase)
     {
         _lessons = new Lessons(database);
+        _supabase = supabase;
         InitializeComponent();
         BindingContext = this;
         SchoolLevelPicker.ItemsSource = _lessons.SchoolLevels.ToArray();
@@ -95,7 +96,15 @@ public partial class LessonPlans : ContentPage
 
         try
         {
-            var error = await _lessons.DeletePlanAsync(plan, CurrentUser);
+            var currentUser = _supabase.CurrentUserId;
+            if (string.IsNullOrWhiteSpace(currentUser))
+            {
+                await DisplayAlertAsync("Sign in required", "Sign in before deleting lesson plans.", "OK");
+                return;
+            }
+
+            var isAdmin = await _supabase.IsCurrentUserAdminAsync();
+            var error = await _lessons.DeletePlanAsync(plan, currentUser, isAdmin);
             if (error is not null)
             {
                 await DisplayAlertAsync("Unable to delete lesson plan", error, "OK");
@@ -114,6 +123,14 @@ public partial class LessonPlans : ContentPage
     {
         try
         {
+            var currentUser = _supabase.CurrentUserId;
+            if (string.IsNullOrWhiteSpace(currentUser))
+            {
+                await DisplayAlertAsync("Sign in required", "Sign in before saving lesson plans.", "OK");
+                return;
+            }
+
+            var isAdmin = await _supabase.IsCurrentUserAdminAsync();
             var validationMessage = await _lessons.SavePlanAsync(
                 _editingPlan,
                 TitleEntry.Text,
@@ -125,7 +142,8 @@ public partial class LessonPlans : ContentPage
                 DurationEntry.Text,
                 ObjectivesEditor.Text,
                 LockedSwitch.IsToggled,
-                CurrentUser);
+                currentUser,
+                isAdmin);
 
             if (validationMessage is not null)
             {

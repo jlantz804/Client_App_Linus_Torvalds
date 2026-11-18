@@ -105,11 +105,11 @@ public class Lessons
             plan.Objectives.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
     }
 
-    public async Task<string?> DeletePlanAsync(LessonPlan plan, string currentUser)
+    public async Task<string?> DeletePlanAsync(LessonPlan plan, string currentUser, bool isAdmin)
     {
-        if (plan.Locked && !string.Equals(currentUser, plan.CreatedBy, StringComparison.Ordinal))
+        if (plan.Locked && !isAdmin && !string.Equals(currentUser, plan.CreatedBy, StringComparison.Ordinal))
         {
-            return "Only the creator can delete a locked lesson plan.";
+            return "Only the creator or an admin can delete a locked lesson plan.";
         }
 
         await _database.DeleteLessonPlanAsync(plan);
@@ -127,13 +127,15 @@ public class Lessons
         string? durationText,
         string? objectives,
         bool locked,
-        string currentUser)
+        string currentUser,
+        bool isAdmin)
     {
         if (editingPlan is not null &&
             (editingPlan.Locked || editingPlan.Locked != locked) &&
+            !isAdmin &&
             !string.Equals(currentUser, editingPlan.CreatedBy, StringComparison.Ordinal))
         {
-            return "Only the creator can edit a locked lesson plan or change its lock status.";
+            return "Only the creator or an admin can edit a locked lesson plan or change its lock status.";
         }
 
         title = title?.Trim() ?? string.Empty;
@@ -169,7 +171,7 @@ public class Lessons
             ScheduledDate = scheduledDate ?? DateTime.Today,
             DurationMinutes = duration,
             Objectives = objectives,
-            CreatedBy = editingPlan?.CreatedBy ?? currentUser,
+            CreatedBy = editingPlan is null ? currentUser : editingPlan.CreatedBy,
             Locked = locked
         };
 

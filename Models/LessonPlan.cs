@@ -44,7 +44,7 @@ public sealed class LessonPlan : BaseModel
     public string Objectives { get; set; } = string.Empty;
 
     [Column("created_by")]
-    public string CreatedBy { get; set; } = "Developer";
+    public string? CreatedBy { get; set; }
 
     [Column("locked")]
     public bool Locked { get; set; }

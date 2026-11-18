@@ -1,10 +1,13 @@
-﻿namespace Client_App;
+﻿using AdaptedPE;
+
+namespace Client_App;
 
 public partial class AppShell : Shell
 {
-	public AppShell()
+	public AppShell(SupabaseService supabase)
 	{
 		InitializeComponent();
+        TeacherSignInShellContent.ContentTemplate = new DataTemplate(() => new TeacherSignInPage(supabase));
 		Routing.RegisterRoute(nameof(DestinationPage), typeof(DestinationPage));
 		Routing.RegisterRoute(nameof(LessonPlans), typeof(LessonPlans));
 		Routing.RegisterRoute(nameof(ActivitiesPage), typeof(ActivitiesPage));
