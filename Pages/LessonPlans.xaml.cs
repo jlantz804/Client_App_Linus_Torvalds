@@ -44,11 +44,12 @@ public partial class LessonPlans : ContentPage
         {
             SchoolLevelPicker.SelectedIndex = -1;
         }
+        var selectedSchoolLevel = SchoolLevelPicker.SelectedItem as string;
         LockedSwitch.IsToggled = false;
-        ActivityPicker.ItemsSource = Array.Empty<string>();
+        ActivityPicker.ItemsSource = _lessons.GetActivities(selectedSchoolLevel);
         ActivityPicker.SelectedIndex = -1;
         CategoryEntry.Text = string.Empty;
-        CategoryEntry.IsReadOnly = false;
+        CategoryEntry.IsReadOnly = _lessons.IsCategoryReadOnly(selectedSchoolLevel);
         GradeEntry.Text = string.Empty;
         ScheduledDatePicker.Date = DateTime.Today;
         DurationEntry.Text = string.Empty;
