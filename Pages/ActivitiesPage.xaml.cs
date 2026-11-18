@@ -1,21 +1,26 @@
+using System.Collections.ObjectModel;
 using Client_App.Models;
-using Microsoft.Maui.Controls.Shapes;
 
 namespace Client_App;
 
 /*
 Author: Rishikesh Dhanasekaran
-Show activities from Supabase. Add and remove activities by school level.
+Display school-specific activities in the same layout as Lesson Plans.
+The existing BusinessLogic/Database layer handles the Supabase calls.
 */
 [QueryProperty(nameof(SchoolLevel), "schoolLevel")]
 public partial class ActivitiesPage : ContentPage
 {
     private readonly BusinessLogic _activities;
     private readonly List<ActivityCategory> _categories = [];
+    private readonly List<ActivityItem> _allActivities = [];
+
     private ActivityCategory? _selectedCategory;
     private string _schoolCode = string.Empty;
     private bool _loaded;
     private bool _busy;
+
+    public ObservableCollection<ActivityItem> VisibleActivities { get; } = [];
 
     public string SchoolLevel
     {
@@ -31,6 +36,7 @@ public partial class ActivitiesPage : ContentPage
                 "high" => "High School (9 - 12)",
                 _ => value
             };
+            ActivityCountLabel.Text = $"{SchoolLabel.Text} · Loading activities…";
         }
     }
 
@@ -38,19 +44,19 @@ public partial class ActivitiesPage : ContentPage
     {
         _activities = activities;
         InitializeComponent();
+        BindingContext = this;
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        if (_loaded)
+        if (!_loaded)
         {
-            return;
+            await LoadCategoriesAsync();
         }
-
-        await LoadCategoriesAsync();
     }
 
+    // Load the school-specific categories using the existing database layer.
     private async Task LoadCategoriesAsync()
     {
         if (_busy)
@@ -63,37 +69,70 @@ public partial class ActivitiesPage : ContentPage
         {
             _categories.Clear();
             _categories.AddRange(await _activities.GetActivityCategoriesAsync(_schoolCode));
-            _loaded = true;
+
             if (_schoolCode == "elementary")
             {
-                CategoryPanel.IsVisible = true;
-                ActivityPanel.IsVisible = false;
-                StatusLabel.Text = "Select Object Control Skills or Locomotor Movements.";
+                ShowCategorySelection();
             }
             else
             {
                 _selectedCategory = _categories.FirstOrDefault(c => c.Name == "Sports & Activities");
                 if (_selectedCategory is null)
                 {
-                    ActivityPanel.IsVisible = false;
-                    StatusLabel.Text = "Sports & Activities category was not found for this school level.";
+                    ShowCategorySelection();
+                    CategoryPanel.IsVisible = false;
+                    ActivityCountLabel.Text = "Category not found";
+                    StatusLabel.Text = "Sports & Activities was not found for this school level.";
                     return;
                 }
-                CategoryPanel.IsVisible = false;
-                ActivityPanel.IsVisible = true;
-                BackToCategoriesButton.IsVisible = false;
-                CategoryTitle.Text = "Sports & Activities";
+
+                ShowActivitySection();
                 await ReadActivitiesAsync();
             }
+
+            _loaded = true;
         }
         catch (Exception ex)
         {
             _loaded = false;
             StatusLabel.Text = "Could not load activities.";
-            await DisplayAlertAsync("Supabase error",
-                ex.Message + "\n\nIf anonymous sign-ins are disabled, enable them in Supabase Authentication settings.", "OK");
+            await DisplayAlertAsync("Supabase error", ex.Message, "OK");
         }
-        finally { SetBusy(false); }
+        finally
+        {
+            SetBusy(false);
+        }
+    }
+
+    private void ShowCategorySelection()
+    {
+        _selectedCategory = null;
+        _allActivities.Clear();
+        VisibleActivities.Clear();
+        CategoryPanel.IsVisible = true;
+        ActivityPanel.IsVisible = false;
+        NewActivityButton.IsVisible = false;
+        SearchPanel.IsVisible = false;
+        EditorOverlay.IsVisible = false;
+        SearchEntry.Text = string.Empty;
+        ActivityCountLabel.Text = $"{SchoolLabel.Text} · Choose a category";
+        StatusLabel.Text = "";
+    }
+
+    private void ShowActivitySection()
+    {
+        if (_selectedCategory is null)
+        {
+            return;
+        }
+
+        CategoryPanel.IsVisible = false;
+        ActivityPanel.IsVisible = true;
+        NewActivityButton.IsVisible = true;
+        SearchPanel.IsVisible = true;
+        BackToCategoriesButton.IsVisible = _schoolCode == "elementary";
+        CategoryTitle.Text = _selectedCategory.Name;
+        SearchEntry.Text = string.Empty;
     }
 
     private async Task OpenCategoryAsync(string categoryName)
@@ -106,29 +145,34 @@ public partial class ActivitiesPage : ContentPage
         _selectedCategory = _categories.FirstOrDefault(c => c.Name == categoryName);
         if (_selectedCategory is null)
         {
-            await DisplayAlertAsync("Category not found", categoryName + " was not found in Supabase.", "OK");
+            await DisplayAlertAsync("Category not found",
+                $"{categoryName} was not found in Supabase.", "OK");
             return;
         }
-        CategoryTitle.Text = categoryName;
-        BackToCategoriesButton.IsVisible = true;
-        CategoryPanel.IsVisible = false;
-        ActivityPanel.IsVisible = true;
+
+        ShowActivitySection();
         await RefreshActivitiesAsync();
     }
 
-    private async void OnObjectControlClicked(object? sender, EventArgs e) =>
+    private async void OnObjectControlClicked(object? sender, EventArgs e)
+    {
         await OpenCategoryAsync("Object Control Skills");
+    }
 
-    private async void OnLocomotorClicked(object? sender, EventArgs e) =>
+    private async void OnLocomotorClicked(object? sender, EventArgs e)
+    {
         await OpenCategoryAsync("Locomotor Movements");
+    }
 
     private void OnBackToCategoriesClicked(object? sender, EventArgs e)
     {
-        ActivityPanel.IsVisible = false;
-        CategoryPanel.IsVisible = true;
-        _selectedCategory = null;
+        if (!_busy)
+        {
+            ShowCategorySelection();
+        }
     }
 
+    // Read activities and refresh the cards. Search is local to this category.
     private async Task ReadActivitiesAsync()
     {
         if (_selectedCategory is null)
@@ -136,19 +180,43 @@ public partial class ActivitiesPage : ContentPage
             return;
         }
 
-        var items = await _activities.GetActivitiesByCategoryAsync(_selectedCategory.Id);
-        ActivityList.Children.Clear();
-        foreach (var item in items)
+        var activities = await _activities.GetActivitiesByCategoryAsync(_selectedCategory.Id);
+        _allActivities.Clear();
+        _allActivities.AddRange(activities);
+        ApplySearchFilter();
+        StatusLabel.Text = "";
+    }
+
+    private void ApplySearchFilter()
+    {
+        string searchText = SearchEntry.Text?.Trim() ?? string.Empty;
+        VisibleActivities.Clear();
+        foreach (var activity in _allActivities.OrderBy(a => a.Name,StringComparer.OrdinalIgnoreCase))
         {
-            ActivityList.Children.Add(CreateActivityCard(item));
+            if (searchText.Length == 0
+                || activity.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || (activity.Description?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false))
+            {
+                VisibleActivities.Add(activity);
+            }
         }
 
-        StatusLabel.Text = $"{items.Count} activities in {CategoryTitle.Text}.";
+        ActivityCountLabel.Text = searchText.Length == 0
+            ? $"{_allActivities.Count} activities · {SchoolLabel.Text}"
+            : $"{VisibleActivities.Count} of {_allActivities.Count} activities · {SchoolLabel.Text}";
+    }
+
+    private void OnSearchTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (_selectedCategory is not null)
+        {
+            ApplySearchFilter();
+        }
     }
 
     private async Task RefreshActivitiesAsync()
     {
-        if (_busy)
+        if (_busy || _selectedCategory is null)
         {
             return;
         }
@@ -158,145 +226,139 @@ public partial class ActivitiesPage : ContentPage
         {
             await ReadActivitiesAsync();
         }
-        catch (Exception ex) { await DisplayAlertAsync("Supabase error", ex.Message, "OK"); }
-        finally { SetBusy(false); }
+        catch (Exception ex)
+        {
+            StatusLabel.Text = "Could not refresh activities.";
+            await DisplayAlertAsync("Supabase error", ex.Message, "OK");
+        }
+        finally
+        {
+            SetBusy(false);
+        }
     }
 
-    private async void OnRefreshClicked(object? sender, EventArgs e) =>
-        await RefreshActivitiesAsync();
-
-    private View CreateActivityCard(ActivityItem item)
+    private async void OnRefreshClicked(object? sender, EventArgs e)
     {
-        var layout = new Grid
-        {
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Star },
-                new ColumnDefinition { Width = GridLength.Auto }
-            },
-            ColumnSpacing = 10,
-            Padding = new Thickness(12)
-        };
-
-        var name = new Label
-        {
-            Text = item.Name,
-            FontSize = 16,
-            TextColor = Color.FromArgb("#18352B"),
-            FontAttributes = FontAttributes.Bold,
-            VerticalTextAlignment = TextAlignment.Center
-        };
-        var remove = new Button
-        {
-            Text = "Remove",
-            BackgroundColor = Color.FromArgb("#FFF0ED"),
-            TextColor = Color.FromArgb("#A64232"),
-            CornerRadius = 10,
-            FontSize = 13
-        };
-        remove.Clicked += async (_, _) => await RemoveActivityAsync(item);
-
-        Grid.SetColumn(name, 0);
-        Grid.SetColumn(remove, 1);
-        layout.Children.Add(name);
-        layout.Children.Add(remove);
-
-        return new Border
-        {
-            Stroke = new SolidColorBrush(Color.FromArgb("#E1E9E4")),
-            StrokeThickness = 1,
-            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(14) },
-            BackgroundColor = Colors.White,
-            Content = layout
-        };
+        await RefreshActivitiesAsync();
     }
 
-    private async void OnAddActivityClicked(object? sender, EventArgs e)
+    // Show a matching popup editor, similar to the New Lesson Plan editor.
+    private void OnAddClicked(object? sender, EventArgs e)
     {
         if (_busy || _selectedCategory is null)
         {
             return;
         }
 
-        var name = await DisplayPromptAsync("Add Activity",
-            $"New activity in {_selectedCategory.Name}:",
-            "Add", "Cancel", placeholder: "Activity name", maxLength: 100);
-        if (name is null) // Cancel was clicked.
+        ActivityNameEntry.Text = string.Empty;
+        EditorCategoryLabel.Text = $"{SchoolLabel.Text} · {_selectedCategory.Name}";
+        ValidationLabel.IsVisible = false;
+        EditorOverlay.IsVisible = true;
+    }
+
+    private void OnCancelEditorClicked(object? sender, EventArgs e)
+    {
+        if (!_busy)
+        {
+            EditorOverlay.IsVisible = false;
+        }
+    }
+
+    private async void OnSaveClicked(object? sender, EventArgs e)
+    {
+        if (_busy || _selectedCategory is null)
         {
             return;
         }
-        name = name.Trim();
 
-        SetBusy(true, "Adding activity...");
+        string name = ActivityNameEntry.Text?.Trim() ?? string.Empty;
+        if (name.Length == 0 || name.Length > 100)
+        {
+            ShowValidation("Enter an activity name between 1 and 100 characters.");
+            return;
+        }
+
+        SetBusy(true, "Saving activity...");
         try
         {
             ActivityError result = await _activities.AddActivityAsync(_selectedCategory.Id, name);
-            if (result == ActivityError.NoError)
+            if (result != ActivityError.NoError)
             {
-                await ReadActivitiesAsync();
+                ShowValidation(result.ToUserMessage());
+                return;
             }
-            else
-            {
-                await DisplayAlertAsync("Unable to add activity", result.ToUserMessage(), "OK");
-            }
+
+            EditorOverlay.IsVisible = false;
+            await ReadActivitiesAsync();
         }
-        catch (Exception ex) { await DisplayAlertAsync("Unable to add activity", ex.Message, "OK"); }
-        finally { SetBusy(false); }
+        catch (Exception ex)
+        {
+            ShowValidation(ex.Message);
+        }
+        finally
+        {
+            SetBusy(false);
+        }
     }
 
-    private async Task RemoveActivityAsync(ActivityItem item)
+    private void ShowValidation(string message)
     {
-        if (_busy)
+        ValidationLabel.Text = message;
+        ValidationLabel.IsVisible = true;
+    }
+
+    private async void OnDeleteClicked(object? sender, EventArgs e)
+    {
+        if (_busy || (sender as Button)?.CommandParameter is not ActivityItem activity)
         {
             return;
         }
 
-        bool confirm = await DisplayAlertAsync("Remove Activity",
-            $"Remove '{item.Name}' from this school level?", "Remove", "Cancel");
-        if (!confirm)
+        bool confirmed = await DisplayAlertAsync("Delete activity",
+            $"Delete '{activity.Name}' from this school level?", "Delete", "Cancel");
+        if (!confirmed)
         {
             return;
         }
 
-        SetBusy(true, "Removing activity...");
+        SetBusy(true, "Deleting activity...");
         try
         {
-            ActivityError result = await _activities.RemoveActivityAsync(item.Id);
+            ActivityError result = await _activities.RemoveActivityAsync(activity.Id);
             if (result == ActivityError.NoError)
             {
                 await ReadActivitiesAsync();
             }
             else
             {
-                await DisplayAlertAsync("Unable to remove activity", result.ToUserMessage(), "OK");
+                await DisplayAlertAsync("Unable to delete activity", result.ToUserMessage(), "OK");
             }
         }
-        catch (Exception ex) { await DisplayAlertAsync("Unable to remove activity", ex.Message, "OK"); }
-        finally { SetBusy(false); }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Unable to delete activity", ex.Message, "OK");
+        }
+        finally
+        {
+            SetBusy(false);
+        }
     }
 
     private void SetBusy(bool busy, string? status = null)
     {
         _busy = busy;
-        BusySpinner.IsRunning = BusySpinner.IsVisible = busy;
-        AddActivityButton.IsEnabled = !busy;
+        BusySpinner.IsVisible = busy;
+        BusySpinner.IsRunning = busy;
+        NewActivityButton.IsEnabled = !busy;
+        RefreshButton.IsEnabled = !busy;
+        ObjectControlButton.IsEnabled = !busy;
+        LocomotorButton.IsEnabled = !busy;
+        SaveActivityButton.IsEnabled = !busy;
+
         if (status is not null)
         {
             StatusLabel.Text = status;
         }
     }
-    private async void OnBackToHomeClicked(object? sender, EventArgs e)
-    {
-        try
-        {
-            await Shell.Current.GoToAsync("..");
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlertAsync(
-                "Navigation Error",
-                ex.Message,
-                "OK");
-        }
-    }
+
 }
