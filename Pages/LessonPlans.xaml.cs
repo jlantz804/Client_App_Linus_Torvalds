@@ -3,9 +3,12 @@ using Client_App.Models;
 
 namespace Client_App;
 
+[QueryProperty(nameof(SchoolLevel), "schoolLevel")]
 public partial class LessonPlans : ContentPage
 {
+    private const string CurrentUser = "Developer";
     private readonly Lessons _lessons;
+    public string? SchoolLevel { get; set; }
     private LessonPlan? _editingPlan;
 
     public ObservableCollection<LessonPlan> VisiblePlans { get; } = [];
@@ -35,7 +38,12 @@ public partial class LessonPlans : ContentPage
         _editingPlan = null;
         EditorHeading.Text = "New lesson plan";
         TitleEntry.Text = string.Empty;
-        SchoolLevelPicker.SelectedIndex = -1;
+        SchoolLevelPicker.SelectedItem = SchoolLevel;
+        if (SchoolLevel is null)
+        {
+            SchoolLevelPicker.SelectedIndex = -1;
+        }
+        LockedSwitch.IsToggled = false;
         ActivityPicker.ItemsSource = Array.Empty<string>();
         ActivityPicker.SelectedIndex = -1;
         CategoryEntry.Text = string.Empty;
@@ -67,6 +75,7 @@ public partial class LessonPlans : ContentPage
         ScheduledDatePicker.Date = plan.ScheduledDate;
         DurationEntry.Text = plan.DurationMinutes.ToString();
         ObjectivesEditor.Text = plan.Objectives;
+        LockedSwitch.IsToggled = plan.Locked;
         ValidationLabel.IsVisible = false;
         EditorOverlay.IsVisible = true;
     }
@@ -86,7 +95,13 @@ public partial class LessonPlans : ContentPage
 
         try
         {
-            await _lessons.DeletePlanAsync(plan);
+            var error = await _lessons.DeletePlanAsync(plan, CurrentUser);
+            if (error is not null)
+            {
+                await DisplayAlertAsync("Unable to delete lesson plan", error, "OK");
+                return;
+            }
+
             await LoadPlansAsync();
         }
         catch (Exception exception)
@@ -108,7 +123,9 @@ public partial class LessonPlans : ContentPage
                 GradeEntry.Text,
                 ScheduledDatePicker.Date,
                 DurationEntry.Text,
-                ObjectivesEditor.Text);
+                ObjectivesEditor.Text,
+                LockedSwitch.IsToggled,
+                CurrentUser);
 
             if (validationMessage is not null)
             {
@@ -160,6 +177,12 @@ public partial class LessonPlans : ContentPage
     private void RefreshPlans(string? searchText = null)
     {
         var plans = _lessons.SearchPlans(searchText ?? SearchEntry.Text);
+        if (!string.IsNullOrWhiteSpace(SchoolLevel))
+        {
+            plans = plans
+                .Where(plan => string.Equals(plan.SchoolLevel, SchoolLevel, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+        }
 
         VisiblePlans.Clear();
         foreach (var plan in plans)

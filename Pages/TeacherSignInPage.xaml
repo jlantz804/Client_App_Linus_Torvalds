@@ -20,10 +20,21 @@
             Margin="0,12,0,0" />
 
         <Label
-            Text="I'll implement login later - Joey"
+            Text="Sign in to continue to your teacher workspace."
             FontSize="16"
             TextColor="#667085"
             HorizontalTextAlignment="Center" />
+
+        <Entry
+            x:Name="EmailEntry"
+            Placeholder="Email"
+            Keyboard="Email"
+            ClearButtonVisibility="WhileEditing" />
+
+        <Entry
+            x:Name="PasswordEntry"
+            Placeholder="Password"
+            IsPassword="True" />
 
         <Button
             x:Name="SignInButton"
