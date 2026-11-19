@@ -17,7 +17,10 @@ public enum EquipmentModificationError
 {
     NoError,
     DuplicateEquipmentModiifcation,
-    DBAdditionError
+    DBAdditionError,
+    NoRowDeleted,
+    DBDeleteError,
+    EditError
 }
 // Rishi: Errors returned from adding/removing activities.
 public enum ActivityError
