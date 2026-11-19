@@ -14,9 +14,10 @@ public partial class DrillsPage : ContentPage
         UpdateCount();
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
+        await MauiProgram.BusinessLogic.InitializeDrillsAsync();
         UpdateCount();
     }
 

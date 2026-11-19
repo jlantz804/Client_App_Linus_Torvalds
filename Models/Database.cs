@@ -49,7 +49,7 @@ public partial class Database : IDatabase
 
             if (_client.Auth.CurrentSession is null)
             {
-                await _client.Auth.SignInAnonymously();
+                throw new InvalidOperationException("Sign in before accessing this feature.");
             }
         }
         finally

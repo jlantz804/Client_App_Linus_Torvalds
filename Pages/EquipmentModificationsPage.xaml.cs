@@ -14,6 +14,7 @@ public partial class EquipmentModificationsPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        await MauiProgram.BusinessLogic.InitializeDrillsAsync();
         await LoadModificationsAsync();
     }
 
