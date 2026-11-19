@@ -49,6 +49,12 @@ public sealed class SupabaseService
         return !string.IsNullOrWhiteSpace(session?.User?.Id);
     }
 
+    public async Task SignOutAsync()
+    {
+        await InitializeAsync();
+        await Client.Auth.SignOut();
+    }
+
     public async Task<bool> CreateAccountAsync(string email, string name, string password)
     {
         await InitializeAsync();

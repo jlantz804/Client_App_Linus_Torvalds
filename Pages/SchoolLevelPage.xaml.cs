@@ -11,9 +11,38 @@ Bugs: None found
 
 public partial class SchoolLevelPage : ContentPage
 {
-    public SchoolLevelPage()
+    private readonly SupabaseService _supabase;
+
+    public SchoolLevelPage(SupabaseService supabase)
     {
         InitializeComponent();
+        _supabase = supabase;
+    }
+
+    private async void OnSignOutClicked(object? sender, EventArgs e)
+    {
+        var signOutButton = sender as Button;
+        if (signOutButton is not null)
+        {
+            signOutButton.IsEnabled = false;
+        }
+
+        try
+        {
+            await _supabase.SignOutAsync();
+            await Shell.Current.GoToAsync($"//{nameof(TeacherSignInPage)}");
+        }
+        catch (Exception exception)
+        {
+            await DisplayAlertAsync("Sign out failed", exception.Message, "OK");
+        }
+        finally
+        {
+            if (signOutButton is not null)
+            {
+                signOutButton.IsEnabled = true;
+            }
+        }
     }
 
     private async void OnElementarySelected(object? sender, TappedEventArgs e) => await NavigateToDestinationsAsync("Elementary");

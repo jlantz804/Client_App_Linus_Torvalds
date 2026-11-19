@@ -28,6 +28,14 @@
                 HorizontalTextAlignment="Center"
                 Margin="0,2,0,18"/>
 
+            <Button
+                Text="Sign Out"
+                Clicked="OnSignOutClicked"
+                HorizontalOptions="End"
+                BackgroundColor="#F2F4F7"
+                TextColor="#344054"
+                CornerRadius="10"
+                Margin="0,0,0,18"/>
 
             <!-- Elementary School -->
             <Border

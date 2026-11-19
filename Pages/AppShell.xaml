@@ -17,6 +17,7 @@
 
     <FlyoutItem Title="School Selection">
         <ShellContent
+            x:Name="SchoolSelectionShellContent"
             Title="School Selection"
             ContentTemplate="{DataTemplate pages:SchoolLevelPage}"
             Route="SchoolLevelPage" />
