@@ -49,6 +49,18 @@ public sealed class LessonPlan : BaseModel
     [System.Text.Json.Serialization.JsonIgnore]
     public string CreatorName { get; set; } = "Unknown teacher";
 
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool CanManageLock
+    {
+        get; set;
+    }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool CanEditOrDelete
+    {
+        get; set;
+    }
+
     [Column("locked")]
     public bool Locked { get; set; }
 }
