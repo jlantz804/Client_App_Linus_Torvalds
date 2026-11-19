@@ -19,13 +19,13 @@ public class BusinessLogic
         get { return Database.Activities; }
     }
 
-    public BusinessLogic()
+    public BusinessLogic(IDatabase database)
     {
-        Database = new Database();
-        InitializeDrillsAsync();
+        Database = database;
+        _ = InitializeDrillsAsync();
     }
 
-    public async void InitializeDrillsAsync()
+    public async Task InitializeDrillsAsync()
     {
         await Database.SelectAllDrills();
     }

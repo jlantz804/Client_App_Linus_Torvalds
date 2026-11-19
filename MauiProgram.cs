@@ -6,7 +6,9 @@ using Client_App.Models;
 public static class MauiProgram
 {
 
-    public static BusinessLogic BusinessLogic { get; } = new();
+    public static SupabaseService Supabase { get; } = new();
+    public static BusinessLogic BusinessLogic { get; } = new(new Database(Supabase));
+
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
@@ -18,7 +20,7 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
-        builder.Services.AddSingleton<SupabaseService>();
+        builder.Services.AddSingleton(MauiProgram.Supabase);
         builder.Services.AddSingleton<IDatabase, Database>();
 
         // Rishi: Activities now use BusinessLogic -> IDatabase -> Database.
