@@ -46,6 +46,7 @@ public partial class LessonPlans : ContentPage
         }
         var selectedSchoolLevel = SchoolLevelPicker.SelectedItem as string;
         LockedSwitch.IsToggled = false;
+        LockedSwitch.IsEnabled = true;
         ActivityPicker.ItemsSource = _lessons.GetActivities(selectedSchoolLevel);
         ActivityPicker.SelectedIndex = -1;
         CategoryEntry.Text = string.Empty;
@@ -78,6 +79,7 @@ public partial class LessonPlans : ContentPage
         DurationEntry.Text = plan.DurationMinutes.ToString();
         ObjectivesEditor.Text = plan.Objectives;
         LockedSwitch.IsToggled = plan.Locked;
+        LockedSwitch.IsEnabled = plan.CanManageLock;
         ValidationLabel.IsVisible = false;
         EditorOverlay.IsVisible = true;
     }
@@ -192,6 +194,25 @@ public partial class LessonPlans : ContentPage
         await _lessons.LoadPlansAsync();
 
         var plans = _lessons.SearchPlans(null);
+        var currentUser = _supabase.CurrentUserId;
+        var isAdmin = false;
+        if (!string.IsNullOrWhiteSpace(currentUser))
+        {
+            try
+            {
+                isAdmin = await _supabase.IsCurrentUserAdminAsync();
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        foreach (var plan in plans)
+        {
+            plan.CanManageLock = isAdmin || string.Equals(currentUser, plan.CreatedBy, StringComparison.Ordinal);
+            plan.CanEditOrDelete = !plan.Locked || plan.CanManageLock;
+        }
+
         try
         {
             var profiles = (await _supabase.Client.From<UserProfile>().Get()).Models;
