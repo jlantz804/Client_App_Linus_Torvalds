@@ -99,7 +99,7 @@ public class BusinessLogic
         return DrillError.NoError;
     }
 
-    //Equipment modification methods
+    // Alex Equipment modification methods
     public async Task<EquipmentModificationError> AddEquipmentModification(ActivityItem activity,
     string name, string description, string image, string steps)
     {
@@ -112,6 +112,31 @@ public class BusinessLogic
         modification.Steps = steps;
 
         return await Database.InsertEquipmentModification(modification);
+    }
+
+    public Task<ObservableCollection<EquipmentModification>> GetEquipmentModificationsAsync()
+    {
+        return Database.GetEquipmentModificationsAsync();
+    }
+
+    public Task<EquipmentModificationError> DeleteEquipmentModificationsAsync(EquipmentModification modification)
+    {
+        return Database.DeleteEquipmentModificationsAsync(modification);
+    }
+
+    public Task<EquipmentModificationError> UpdateEquipmentModificationAsync(long id, ActivityItem activity,
+    string name, string description, string image, string steps)
+    {
+        EquipmentModification modification = new EquipmentModification();
+
+        modification.Id = id;
+        modification.ActivityId = activity.Id;
+        modification.Name = name;
+        modification.Description = description;
+        modification.Image = image;
+        modification.Steps = steps;
+
+        return Database.UpdateEquipmentModificationAsync(modification);
     }
     // Rishi: Activities logic
     public Task<IReadOnlyList<ActivityCategory>> GetActivityCategoriesAsync(string schoolLevel)

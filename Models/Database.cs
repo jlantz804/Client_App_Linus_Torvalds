@@ -241,6 +241,59 @@ public partial class Database : IDatabase
         }
         return EquipmentModificationError.NoError;
     }
+
+    public async Task<ObservableCollection<EquipmentModification>> GetEquipmentModificationsAsync()
+    {
+        await InitializeClientAsync();
+
+        var response = await _client.From<EquipmentModification>().Get();
+
+        return new ObservableCollection<EquipmentModification>(response.Models);
+    }
+
+    public async Task<EquipmentModificationError> DeleteEquipmentModificationsAsync(EquipmentModification modification)
+    {
+        try
+        {
+            await InitializeClientAsync();
+
+            var response = await _client.From<EquipmentModification>().Delete(modification);
+
+            if(response.Models.Count == 0)
+            {
+                return EquipmentModificationError.NoRowDeleted;
+            }
+            return EquipmentModificationError.NoError;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Deletion failed: {ex}");
+            return EquipmentModificationError.DBDeleteError;
+        }
+    }
+
+    public async Task<EquipmentModificationError> UpdateEquipmentModificationAsync(EquipmentModification modification)
+    {
+        try
+        {
+            await InitializeClientAsync();
+
+            var response = await _client.From<EquipmentModification>().Update(modification);
+
+            if(response.Models.Count == 0)
+            {
+                return EquipmentModificationError.EditError;
+            }
+
+            return EquipmentModificationError.NoError;
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine($"Edit failed: {ex}");
+            return EquipmentModificationError.EditError;
+        }
+    }
+
     // Rishi: Supabase activities queries. Other database methods are unchanged.
     private static readonly HttpClient ActivityHttp = new();
 
